@@ -72,6 +72,15 @@
 
   main { max-width: 1400px; margin: 0 auto; padding: 1rem; }
 
+  /* --- Availability --- */
+  .unavailable { opacity: 0.5; }
+  .sold-out-badge {
+    display: inline-block; font-size: 0.6rem; font-weight: 700;
+    padding: 0.1rem 0.3rem; border-radius: 3px;
+    background: #d9534f; color: #fff; text-transform: uppercase;
+    vertical-align: middle; margin-left: 0.3rem;
+  }
+
   /* --- Watchlist Section --- */
   #watchlist-section { margin-bottom: 1.5rem; }
   #watchlist-section h2 {
@@ -111,6 +120,7 @@
   .wc-price-block { text-align: right; flex-shrink: 0; margin-left: 0.5rem; }
   .wc-price { font-weight: 600; color: var(--accent); font-size: 0.9rem; }
   .wc-peroz { font-size: 0.7rem; color: var(--text-muted); }
+  .wc-sample { font-size: 0.7rem; color: var(--text-muted); }
 
   .wc-mid { margin-bottom: 0.3rem; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
   .roaster-badge { font-size: 0.75rem; color: var(--text-muted); }
@@ -256,6 +266,7 @@
   </section>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js" integrity="sha512-4xUl/d6D6THrAnXAwGajXkoWaeMNwEKK4iNfq5DotEbFlY2F8Jr3g+4cV7FGhZLbN+tKAcGJXGYi5GkqI7Nug==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 /* ---------- Config ---------- */
 const TABLE_COLS = [
@@ -266,8 +277,8 @@ const TABLE_COLS = [
   { key: "process",          label: "Process" },
   { key: "variety_str",      label: "Variety",   wrap: true },
   { key: "price",            label: "Price",     sort: "price" },
-  { key: "weight_label",     label: "Size" },
   { key: "price_per_oz",     label: "$/oz",      sort: "price" },
+  { key: "sample",           label: "Sample" },
 ];
 
 const TIER_ORDER = {
@@ -285,18 +296,13 @@ const TIER_ORDER = {
 /* ---------- State ---------- */
 let allProducts = [];
 let filtered = [];
+let searchIndex = null;  // Lunr index
 let sortCol = "roaster_name";
 let sortDir = 1;
 let selectedIdx = -1;
 
 /* ---------- Helpers ---------- */
 function gramsToOz(g) { return g / 28.3495; }
-
-function computePricePerOz(p) {
-  if (!p.price_num || !p.weight_grams) return 0;
-  const oz = gramsToOz(p.weight_grams);
-  return oz > 0 ? p.price_num / oz : 0;
-}
 
 function esc(s) {
   if (!s) return "";
@@ -305,24 +311,51 @@ function esc(s) {
   return d.innerHTML;
 }
 
+function priceWithSize(priceNum, weightLabel) {
+  if (!priceNum) return "";
+  const p = `$${priceNum.toFixed(2)}`;
+  return weightLabel ? `${p} / ${weightLabel}` : p;
+}
+
 /* ---------- Data loading ---------- */
 fetch("roasted-data.json")
   .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
   .then(data => {
     allProducts = data
       .filter(p => p.is_coffee_product)
-      .map(p => {
+      .map((p, i) => {
         const price_num = parseFloat(p.price) || 0;
         const ppo = (price_num && p.weight_grams) ? price_num / gramsToOz(p.weight_grams) : 0;
+        const sample_price_num = parseFloat(p.sample_price) || 0;
         return {
           ...p,
+          _idx: i,
           variety_str: (p.variety || []).join(", "),
           tasting_str: (p.tasting_notes || []).join(", "),
           price_num,
           price_per_oz: ppo,
           price_per_oz_str: ppo ? `$${ppo.toFixed(2)}` : "",
+          sample_price_num,
+          sample_display: sample_price_num
+            ? `$${sample_price_num.toFixed(2)}${p.sample_label ? ' / ' + p.sample_label : ''}`
+            : "",
         };
       });
+
+    // Build Lunr search index
+    searchIndex = lunr(function() {
+      this.field('title', { boost: 3 });
+      this.field('producer_or_farm', { boost: 2 });
+      this.field('origin_country');
+      this.field('variety_str');
+      this.field('process');
+      this.field('tasting_str');
+      this.field('roaster_name');
+      this.field('watchlist_match');
+      this.ref('_idx');
+      allProducts.forEach(p => { this.add(p); });
+    });
+
     filtered = [...allProducts];
     document.getElementById("loading").style.display = "none";
     buildFilters();
@@ -356,25 +389,43 @@ function populateSelect(id, values) {
 }
 
 function applyFilters() {
-  const q = document.getElementById("search").value.toLowerCase().trim();
+  const q = document.getElementById("search").value.trim();
   const roaster = document.getElementById("filter-roaster").value;
   const country = document.getElementById("filter-country").value;
   const tier = document.getElementById("filter-tier").value;
 
-  filtered = allProducts.filter(p => {
+  // Start with Lunr search or all products
+  let pool;
+  if (q && searchIndex) {
+    try {
+      // Try stemmed search + wildcard for partial matches
+      const results = searchIndex.search(q + '*');
+      const idxSet = new Set(results.map(r => parseInt(r.ref)));
+      pool = allProducts.filter(p => idxSet.has(p._idx));
+    } catch {
+      // If Lunr query syntax error, fall back to substring
+      const ql = q.toLowerCase();
+      pool = allProducts.filter(p => {
+        const corpus = [
+          p.title, p.roaster_name, p.producer_or_farm, p.origin_country,
+          p.origin_region, p.process, p.variety_str, p.tasting_str,
+          p.watchlist_match, p.watchlist_tier,
+        ].filter(Boolean).join(" ").toLowerCase();
+        return corpus.includes(ql);
+      });
+    }
+  } else {
+    pool = allProducts;
+  }
+
+  // Apply dropdown filters
+  filtered = pool.filter(p => {
     if (roaster && p.roaster_name !== roaster) return false;
     if (country && p.origin_country !== country) return false;
     if (tier && p.watchlist_tier !== tier) return false;
-    if (q) {
-      const corpus = [
-        p.title, p.roaster_name, p.producer_or_farm, p.origin_country,
-        p.origin_region, p.process, p.variety_str, p.tasting_str,
-        p.watchlist_match, p.watchlist_tier, p.watchlist_credential_detail,
-      ].filter(Boolean).join(" ").toLowerCase();
-      if (!corpus.includes(q)) return false;
-    }
     return true;
   });
+
   selectedIdx = -1;
   sortAndRender();
 }
@@ -413,7 +464,11 @@ function renderWatchlist() {
   section.style.display = "block";
   count.textContent = `(${watchlistProducts.length} products)`;
 
+  // Sort: available first, then by tier, then by name
   watchlistProducts.sort((a, b) => {
+    const aa = a.is_available === false ? 1 : 0;
+    const ab = b.is_available === false ? 1 : 0;
+    if (aa !== ab) return aa - ab;
     const ta = TIER_ORDER[a.watchlist_tier] ?? 99;
     const tb = TIER_ORDER[b.watchlist_tier] ?? 99;
     if (ta !== tb) return ta - tb;
@@ -423,22 +478,25 @@ function renderWatchlist() {
   grid.innerHTML = watchlistProducts.map(p => {
     const producer = p.watchlist_match || p.producer_or_farm || "";
     const meta = [p.origin_country, p.process, p.variety_str].filter(Boolean);
-    const priceStr = p.price_num ? `$${p.price_num.toFixed(2)}` : "";
+    const priceStr = priceWithSize(p.price_num, p.weight_label);
     const perOz = p.price_per_oz_str;
     const accolade = p.watchlist_credential_detail || "";
+    const unavailClass = p.is_available === false ? " unavailable" : "";
+    const soldOutBadge = p.is_available === false ? '<span class="sold-out-badge">Sold Out</span>' : "";
     const imgTag = p.image_url
       ? `<img class="wc-img" src="${esc(p.image_url)}" alt="" loading="lazy">`
       : `<div class="wc-img"></div>`;
 
     return `
-      <div class="watchlist-card" onclick="showDetailByUrl('${esc(p.product_url)}')">
+      <div class="watchlist-card${unavailClass}" onclick="showDetailByUrl('${esc(p.product_url)}')">
         ${imgTag}
         <div class="wc-body">
           <div class="wc-top">
-            <h3>${esc(p.title)}</h3>
+            <h3>${esc(p.title)}${soldOutBadge}</h3>
             <div class="wc-price-block">
-              ${priceStr ? `<div class="wc-price">${priceStr}</div>` : ""}
+              ${priceStr ? `<div class="wc-price">${esc(priceStr)}</div>` : ""}
               ${perOz ? `<div class="wc-peroz">${perOz}/oz</div>` : ""}
+              ${p.sample_display ? `<div class="wc-sample">Sample: ${esc(p.sample_display)}</div>` : ""}
             </div>
           </div>
           <div class="wc-mid">
@@ -481,7 +539,11 @@ function sortVal(c, key) {
 }
 
 function sortAndRender() {
+  // Sort: unavailable products always at bottom, then by chosen column
   filtered.sort((a, b) => {
+    const aa = a.is_available === false ? 1 : 0;
+    const ab = b.is_available === false ? 1 : 0;
+    if (aa !== ab) return aa - ab;
     const va = sortVal(a, sortCol);
     const vb = sortVal(b, sortCol);
     if (va < vb) return -1 * sortDir;
@@ -505,17 +567,27 @@ function renderTable() {
     const tr = document.createElement("tr");
     if (i === selectedIdx) tr.classList.add("selected");
     if (c.watchlist_match) tr.classList.add("watchlist-row");
+    if (c.is_available === false) tr.classList.add("unavailable");
     TABLE_COLS.forEach(col => {
       const td = document.createElement("td");
       if (col.img && c.image_url) {
         const img = document.createElement("img");
         img.className = "tbl-img"; img.src = c.image_url; img.alt = ""; img.loading = "lazy";
         td.appendChild(img);
-        td.appendChild(document.createTextNode(c[col.key] || ""));
-      } else if (col.key === "price" && c.price_num) {
-        td.textContent = `$${c.price_num.toFixed(2)}`;
+        const nameText = c[col.key] || "";
+        td.appendChild(document.createTextNode(nameText));
+        if (c.is_available === false) {
+          const badge = document.createElement("span");
+          badge.className = "sold-out-badge";
+          badge.textContent = "Sold Out";
+          td.appendChild(badge);
+        }
+      } else if (col.key === "price") {
+        td.textContent = priceWithSize(c.price_num, c.weight_label);
       } else if (col.key === "price_per_oz") {
         td.textContent = c.price_per_oz_str;
+      } else if (col.key === "sample") {
+        td.textContent = c.sample_display;
       } else {
         td.textContent = c[col.key] || "";
       }
@@ -567,11 +639,14 @@ function showDetailForProduct(c) {
 
   // Specs
   const sizeStr = c.weight_label || (c.weight_grams ? `${c.weight_grams}g` : "");
+  const availStr = c.is_available === false ? "Sold Out" : "In Stock";
+  const sampleStr = c.sample_display || "";
   const specs = [
     { label: "Roaster", value: c.roaster_name },
-    { label: "Price", value: c.price_num ? `$${c.price_num.toFixed(2)}` : "" },
-    { label: "Size", value: sizeStr },
+    { label: "Price", value: priceWithSize(c.price_num, sizeStr) },
     { label: "$/oz", value: c.price_per_oz_str },
+    { label: "Sample", value: sampleStr },
+    { label: "Availability", value: availStr },
     { label: "Producer", value: c.producer_or_farm },
     { label: "Country", value: c.origin_country },
     { label: "Region", value: c.origin_region },
@@ -584,7 +659,7 @@ function showDetailForProduct(c) {
 
   document.getElementById("detail-specs").innerHTML = specs
     .filter(s => s.value)
-    .map(s => `<div class="spec-item"><span class="spec-label">${s.label}:</span><span class="spec-value">${esc(s.value)}</span></div>`)
+    .map(s => `<div class="spec-item"><span class="spec-label">${s.label}:</span><span class="spec-value">${esc(String(s.value))}</span></div>`)
     .join("");
 
   // Notes

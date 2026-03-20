@@ -32,10 +32,15 @@ class ShopifyProduct(BaseModel):
     tags: list[str] = Field(default_factory=list)
     body_html: str = ""
     created_at: str = ""
-    # First variant price and weight
+    is_available: bool = True  # True if any variant is available
+    # Standard variant (closest to 250-340g retail bag)
     price: str = ""
     weight_grams: int = 0  # from variant.grams
     weight_label: str = ""  # variant title e.g. "10oz", "250g"
+    # Sample variant (smallest size under 100g, if available)
+    sample_price: str = ""
+    sample_grams: int = 0
+    sample_label: str = ""
     # First image URL
     image_url: str = ""
 
@@ -54,9 +59,13 @@ class RoastedCoffeeProduct(BaseModel):
     vendor: str = ""
     product_type: str = ""
     tags: list[str] = Field(default_factory=list)
+    is_available: bool = True
     price: str = ""
     weight_grams: int = 0
     weight_label: str = ""
+    sample_price: str = ""
+    sample_grams: int = 0
+    sample_label: str = ""
     created_at: str = ""
 
     # LLM-extracted fields
