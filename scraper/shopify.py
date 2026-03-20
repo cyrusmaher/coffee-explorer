@@ -1,6 +1,7 @@
 """Fetch products from Shopify /products.json API with pagination."""
 
 import logging
+import re
 import time
 
 import requests
@@ -64,7 +65,18 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
             first_variant = variants[0] if variants else {}
             price = first_variant.get("price", "")
             weight_grams = first_variant.get("grams", 0) or 0
-            weight_label = first_variant.get("title", "") if first_variant.get("title") != "Default Title" else ""
+
+            # Only use variant title as weight_label if it looks like a weight
+            # (e.g. "10oz", "250g", "1lb", "2 oz") — not "Whole Bean", "Ground", etc.
+            raw_label = first_variant.get("title", "")
+            if raw_label and re.search(r"\d+\s*(oz|g|gr|lb|kg)\b", raw_label, re.IGNORECASE):
+                weight_label = raw_label
+            elif weight_grams > 0:
+                # Derive label from grams
+                oz = weight_grams / 28.3495
+                weight_label = f"{oz:.0f}oz" if oz >= 1 else f"{weight_grams}g"
+            else:
+                weight_label = ""
 
             # Extract first image URL
             images = p.get("images", [])

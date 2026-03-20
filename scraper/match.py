@@ -24,8 +24,9 @@ log = logging.getLogger(__name__)
 WATCHLIST_FILE = Path(__file__).resolve().parent.parent / "data" / "producer_watchlist.csv"
 MATCH_CACHE_FILE = Path(__file__).resolve().parent.parent / "data" / "match_cache.json"
 
-# Gemini 3 Flash for Tier 2 matching
-MODEL = "gemini-3-flash-preview"
+# Gemini 3 Flash for Tier 2 proposal, Pro for review
+MODEL_PROPOSE = "gemini-3-flash-preview"
+MODEL_REVIEW = "gemini-3.1-pro-preview"
 
 
 def _normalize(s: str) -> str:
@@ -134,14 +135,37 @@ def _content_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
 
+def _parse_json_response(text: str) -> list | dict:
+    """Parse JSON from LLM response, stripping markdown fences."""
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```\w*\n?", "", cleaned)
+        cleaned = re.sub(r"\n?```$", "", cleaned)
+    return json.loads(cleaned.strip())
+
+
+def _find_watchlist_row(name: str, watchlist: list[dict]) -> dict | None:
+    """Find a watchlist row by producer name or farm name."""
+    norm = _normalize(name)
+    for wp in watchlist:
+        if _normalize(wp.get("producer_name", "")) == norm:
+            return wp
+        if _normalize(wp.get("farm_or_station", "")) == norm:
+            return wp
+    return None
+
+
 async def _tier2_batch_match(
     unmatched: list[RoastedCoffeeProduct],
     watchlist: list[dict],
 ) -> dict[str, dict | None]:
-    """LLM-based matching for products that didn't match in Tier 1.
+    """Two-step LLM matching: Flash proposes, Pro reviews.
 
-    Sends batches to Gemini with the full watchlist for fuzzy matching.
-    Uses async concurrency (semaphore pattern from ds_utils.py).
+    Step 1 (Gemini 3 Flash): Propose candidate matches with strong bias toward
+    "no match" as the default.
+    Step 2 (Gemini 3.1 Pro): Review each proposed match — only keep matches
+    where the product text contains grounded evidence of the association.
+
     Returns dict mapping product_url -> matched watchlist row or None.
     """
     project = os.environ.get("GOOGLE_CLOUD_PROJECT")
@@ -159,148 +183,201 @@ async def _tier2_batch_match(
     cache = _load_match_cache()
     results: dict[str, dict | None] = {}
 
-    # Build concise watchlist reference
     watchlist_ref = "\n".join(
         f"- {p.get('producer_name', '?')} | {p.get('farm_or_station', '?')} | "
         f"{p.get('country', '?')} | {p.get('tier', '?')}"
         for p in watchlist
     )
 
-    # Build batches, resolving cache hits first
-    batch_size = 10
-    batches: list[list[RoastedCoffeeProduct]] = []  # uncached batches to send to LLM
-
-    for batch_start in range(0, len(unmatched), batch_size):
-        batch = unmatched[batch_start:batch_start + batch_size]
-        uncached = []
-        for product in batch:
-            cache_key = _content_hash(
-                f"{product.title}|{product.producer_or_farm or ''}"
-            )
-            if cache_key in cache:
-                cached_val = cache[cache_key]
-                if cached_val is None:
-                    results[product.product_url] = None
-                else:
-                    for wp in watchlist:
-                        if wp.get("producer_name") == cached_val.get("producer_name"):
-                            results[product.product_url] = wp
-                            break
-                    else:
-                        results[product.product_url] = None
+    # Resolve cache hits and build uncached work items
+    uncached_products: list[RoastedCoffeeProduct] = []
+    for product in unmatched:
+        cache_key = _content_hash(f"{product.title}|{product.producer_or_farm or ''}")
+        if cache_key in cache:
+            cached_val = cache[cache_key]
+            if cached_val is None:
+                results[product.product_url] = None
             else:
-                uncached.append(product)
-        if uncached:
-            batches.append(uncached)
+                wp = _find_watchlist_row(cached_val.get("producer_name", ""), watchlist)
+                results[product.product_url] = wp
+        else:
+            uncached_products.append(product)
 
     log.info(
-        "Tier 2: %d unmatched products, %d cached, %d batches to send (concurrency=10)",
-        len(unmatched), len(unmatched) - sum(len(b) for b in batches), len(batches),
+        "Tier 2: %d unmatched, %d cached, %d to process",
+        len(unmatched), len(unmatched) - len(uncached_products), len(uncached_products),
     )
 
-    if not batches:
+    if not uncached_products:
         _save_match_cache(cache)
         return results
 
+    # --- Step 1: Flash proposes candidate matches ---
+    batch_size = 10
+    batches = [
+        uncached_products[i:i + batch_size]
+        for i in range(0, len(uncached_products), batch_size)
+    ]
     sem = asyncio.Semaphore(10)
+    proposals: list[tuple[RoastedCoffeeProduct, str]] = []  # (product, matched_name)
     completed = 0
 
-    async def match_batch(uncached: list[RoastedCoffeeProduct]):
+    async def propose_batch(batch: list[RoastedCoffeeProduct]):
         nonlocal completed
         async with sem:
             products_text = "\n".join(
                 f"{i+1}. Title: {p.title} | Producer: {p.producer_or_farm or 'unknown'} | "
                 f"Country: {p.origin_country or 'unknown'} | Roaster: {p.roaster_name}"
-                for i, p in enumerate(uncached)
+                for i, p in enumerate(batch)
             )
 
             prompt = f"""\
-You are matching roasted coffee products to a watchlist of elite coffee producers.
+You are matching roasted coffee products to a watchlist of elite producers.
+
+IMPORTANT: Most products will NOT match any watchlist producer. "No match" is the \
+expected answer for the majority of products. Only return a match if the product \
+title or producer field explicitly names the producer, farm, or estate on the watchlist.
+
+DO NOT match based on:
+- Shared country or region alone (e.g. "Ethiopia Bensa" does NOT mean "Daye Bensa")
+- Shared processing method or variety
+- Vague associations or educated guesses
 
 WATCHLIST (producer | farm | country | tier):
 {watchlist_ref}
 
-PRODUCTS TO MATCH:
+PRODUCTS:
 {products_text}
 
-For each numbered product, determine if it comes from any producer on the watchlist.
-Consider that product titles and descriptions may use different naming conventions
-(e.g. "Esmeralda" for "Hacienda La Esmeralda", "Paraiso 92" for "Granja Paraiso 92").
+Return a JSON array with one entry per product:
+[{{"product_number": 1, "matched_producer": null}}, ...]
 
-Return a JSON array with one object per product:
-[
-  {{"product_number": 1, "matched_producer": "producer_name or null", "confidence": "high/medium/low"}},
-  ...
-]
-
-Only include matches with high or medium confidence. Return null for low confidence or no match.
+Set matched_producer to the exact watchlist producer name ONLY if you are certain \
+the product is from that producer. Otherwise null.
 Return ONLY the JSON array."""
 
             try:
                 response = await client.aio.models.generate_content(
-                    model=MODEL,
-                    contents=prompt,
+                    model=MODEL_PROPOSE, contents=prompt,
                 )
-
-                text = response.text.strip()
-                if text.startswith("```"):
-                    text = re.sub(r"^```\w*\n?", "", text)
-                    text = re.sub(r"\n?```$", "", text)
-                text = text.strip()
-
-                matches = json.loads(text)
-                batch_results = {}
-
+                matches = _parse_json_response(response.text)
+                batch_proposals = []
                 for match_result in matches:
                     idx = match_result.get("product_number", 0) - 1
-                    if 0 <= idx < len(uncached):
-                        product = uncached[idx]
+                    if 0 <= idx < len(batch):
                         matched_name = match_result.get("matched_producer")
-                        confidence = match_result.get("confidence", "low")
-                        cache_key = _content_hash(
-                            f"{product.title}|{product.producer_or_farm or ''}"
-                        )
-
-                        if matched_name and confidence in ("high", "medium"):
-                            found = False
-                            for wp in watchlist:
-                                if (_normalize(wp.get("producer_name", "")) == _normalize(matched_name or "") or
-                                    _normalize(wp.get("farm_or_station", "")) == _normalize(matched_name or "")):
-                                    batch_results[product.product_url] = wp
-                                    cache[cache_key] = {"producer_name": wp.get("producer_name")}
-                                    found = True
-                                    break
-                            if not found:
-                                batch_results[product.product_url] = None
-                                cache[cache_key] = None
+                        if matched_name:
+                            batch_proposals.append((batch[idx], matched_name))
                         else:
-                            batch_results[product.product_url] = None
-                            cache[cache_key] = None
+                            # No match proposed — cache as None
+                            product = batch[idx]
+                            ck = _content_hash(f"{product.title}|{product.producer_or_farm or ''}")
+                            cache[ck] = None
+                            results[product.product_url] = None
 
                 completed += 1
                 if completed % 10 == 0:
-                    _save_match_cache(cache)
-                    log.info("Tier 2 progress: %d/%d batches complete", completed, len(batches))
-
-                return batch_results
+                    log.info("Tier 2 propose: %d/%d batches", completed, len(batches))
+                return batch_proposals
 
             except Exception as e:
-                log.error("Tier 2 batch match failed: %s", e)
+                log.error("Tier 2 propose batch failed: %s", e)
                 completed += 1
-                return {p.product_url: None for p in uncached}
+                for p in batch:
+                    results[p.product_url] = None
+                return []
 
-    tasks = [asyncio.create_task(match_batch(batch)) for batch in batches]
-
+    tasks = [asyncio.create_task(propose_batch(b)) for b in batches]
     for fut in asyncio.as_completed(tasks):
-        batch_results = await fut
-        results.update(batch_results)
+        batch_proposals = await fut
+        proposals.extend(batch_proposals)
+
+    _save_match_cache(cache)  # Save nulls from proposal step
+
+    log.info("Tier 2 propose: %d candidates from %d products", len(proposals), len(uncached_products))
+
+    if not proposals:
+        return results
+
+    # --- Step 2: Pro reviews each proposed match ---
+    review_sem = asyncio.Semaphore(5)  # Pro is heavier, lower concurrency
+    reviewed = 0
+
+    async def review_one(product: RoastedCoffeeProduct, proposed_name: str):
+        nonlocal reviewed
+        async with review_sem:
+            wp = _find_watchlist_row(proposed_name, watchlist)
+            if not wp:
+                return product, None
+
+            prompt = f"""\
+Review whether this coffee product is actually from the proposed producer.
+
+PRODUCT:
+- Title: {product.title}
+- Extracted producer/farm: {product.producer_or_farm or 'none'}
+- Country: {product.origin_country or 'unknown'}
+- Roaster: {product.roaster_name}
+
+PROPOSED MATCH:
+- Producer: {wp.get('producer_name', '?')}
+- Farm: {wp.get('farm_or_station', '?')}
+- Country: {wp.get('country', '?')}
+
+RULES:
+- ACCEPT only if the product title or extracted producer explicitly references \
+the producer's name, farm name, or a well-known abbreviation of it.
+- REJECT if the match is based only on shared country, region, or variety.
+- REJECT if there is no textual evidence in the product fields linking it to this producer.
+
+Return a JSON object:
+{{"verdict": "accept" or "reject", "evidence": "quote the specific text that justifies the match, or explain why rejected"}}
+Return ONLY the JSON object."""
+
+            try:
+                response = await client.aio.models.generate_content(
+                    model=MODEL_REVIEW, contents=prompt,
+                )
+                result = _parse_json_response(response.text)
+                reviewed += 1
+                if reviewed % 10 == 0:
+                    log.info("Tier 2 review: %d/%d reviewed", reviewed, len(proposals))
+
+                if result.get("verdict") == "accept":
+                    return product, wp
+                else:
+                    log.info(
+                        "Tier 2 REJECTED: '%s' != %s (%s)",
+                        product.title[:40], proposed_name, result.get("evidence", "")[:60],
+                    )
+                    return product, None
+
+            except Exception as e:
+                log.error("Tier 2 review failed for '%s': %s", product.title[:40], e)
+                reviewed += 1
+                return product, None
+
+    review_tasks = [
+        asyncio.create_task(review_one(product, proposed_name))
+        for product, proposed_name in proposals
+    ]
+
+    for fut in asyncio.as_completed(review_tasks):
+        product, wp = await fut
+        cache_key = _content_hash(f"{product.title}|{product.producer_or_farm or ''}")
+        if wp:
+            results[product.product_url] = wp
+            cache[cache_key] = {"producer_name": wp.get("producer_name")}
+        else:
+            results[product.product_url] = None
+            cache[cache_key] = None
 
     _save_match_cache(cache)
 
     match_count = sum(1 for v in results.values() if v is not None)
     log.info(
-        "Tier 2 matching: %d products, %d batches, %d matches",
-        len(unmatched), len(batches), match_count,
+        "Tier 2 final: %d proposed -> %d accepted out of %d unmatched",
+        len(proposals), match_count, len(unmatched),
     )
     return results
 
