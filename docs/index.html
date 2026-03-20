@@ -40,11 +40,7 @@
     gap: 1rem;
   }
 
-  header h1 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    white-space: nowrap;
-  }
+  header h1 { font-size: 1.4rem; font-weight: 600; white-space: nowrap; }
 
   .nav-link {
     color: rgba(255,255,255,0.8);
@@ -55,119 +51,73 @@
     border-radius: 4px;
     white-space: nowrap;
   }
-  .nav-link:hover {
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-  }
+  .nav-link:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
   #search {
-    flex: 1;
-    min-width: 200px;
-    max-width: 400px;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    background: rgba(255,255,255,0.9);
-    color: var(--text);
+    flex: 1; min-width: 200px; max-width: 400px;
+    padding: 0.5rem 0.75rem; border: none; border-radius: 6px;
+    font-size: 0.95rem; background: rgba(255,255,255,0.9); color: var(--text);
   }
   #search::placeholder { color: var(--text-muted); }
 
-  .filter-group {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
+  .filter-group { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
   .filter-group select {
-    padding: 0.4rem 0.5rem;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 4px;
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-    font-size: 0.8rem;
-    cursor: pointer;
+    padding: 0.4rem 0.5rem; border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px; background: rgba(255,255,255,0.15); color: #fff;
+    font-size: 0.8rem; cursor: pointer;
   }
   .filter-group select option { color: var(--text); background: var(--surface); }
 
-  #stats {
-    font-size: 0.85rem;
-    opacity: 0.85;
-    white-space: nowrap;
-  }
+  #stats { font-size: 0.85rem; opacity: 0.85; white-space: nowrap; }
 
-  main {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1rem;
-  }
+  main { max-width: 1400px; margin: 0 auto; padding: 1rem; }
 
   /* --- Watchlist Section --- */
-  #watchlist-section {
-    margin-bottom: 1.5rem;
-  }
-
+  #watchlist-section { margin-bottom: 1.5rem; }
   #watchlist-section h2 {
-    font-size: 1.1rem;
-    color: var(--accent);
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    font-size: 1.1rem; color: var(--accent); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
   }
-
-  #watchlist-count {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    font-weight: 400;
-  }
+  #watchlist-count { font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
 
   .watchlist-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 0.75rem;
   }
 
   .watchlist-card {
-    background: var(--gold-bg);
-    border: 1px solid var(--gold-border);
-    border-radius: 8px;
-    padding: 1rem;
-    cursor: pointer;
+    background: var(--gold-bg); border: 1px solid var(--gold-border);
+    border-radius: 8px; padding: 0.85rem; cursor: pointer;
     transition: box-shadow 0.15s, transform 0.15s;
+    display: flex; gap: 0.75rem;
   }
   .watchlist-card:hover {
     box-shadow: 0 2px 8px rgba(139, 94, 60, 0.15);
     transform: translateY(-1px);
   }
 
-  .watchlist-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
+  .wc-img {
+    width: 72px; height: 72px; border-radius: 6px;
+    object-fit: cover; border: 1px solid var(--gold-border);
+    flex-shrink: 0; background: var(--highlight);
   }
 
-  .watchlist-card h3 {
-    font-size: 0.95rem;
-    color: var(--text);
-    line-height: 1.3;
-  }
+  .wc-body { flex: 1; min-width: 0; }
 
-  .watchlist-card .roaster-badge {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
+  .wc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.3rem; }
+  .wc-top h3 { font-size: 0.9rem; color: var(--text); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; }
+
+  .wc-price-block { text-align: right; flex-shrink: 0; margin-left: 0.5rem; }
+  .wc-price { font-weight: 600; color: var(--accent); font-size: 0.9rem; }
+  .wc-peroz { font-size: 0.7rem; color: var(--text-muted); }
+
+  .wc-mid { margin-bottom: 0.3rem; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
+  .roaster-badge { font-size: 0.75rem; color: var(--text-muted); }
 
   .tier-badge {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.15rem 0.4rem;
-    border-radius: 3px;
-    white-space: nowrap;
+    display: inline-block; font-size: 0.65rem; font-weight: 600;
+    padding: 0.1rem 0.35rem; border-radius: 3px; white-space: nowrap;
   }
   .tier-legend { background: #ffd700; color: #5a4700; }
   .tier-coe-legend { background: #e8c547; color: #5a4700; }
@@ -176,160 +126,80 @@
   .tier-elite { background: #a8c4a0; color: #2d4a28; }
   .tier-default { background: var(--border); color: var(--text-muted); }
 
-  .watchlist-card .meta {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 0.75rem;
-  }
-
-  .watchlist-card .price {
-    font-weight: 600;
-    color: var(--accent);
-  }
+  .wc-producer { font-size: 0.82rem; color: var(--accent); margin-bottom: 0.2rem; }
+  .wc-accolade { font-size: 0.72rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wc-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; }
 
   /* --- Table --- */
-  #table-section h2 {
-    font-size: 1.1rem;
-    color: var(--accent);
-    margin-bottom: 0.75rem;
-  }
-
+  #table-section h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 0.75rem; }
   #table-container {
-    overflow-x: auto;
-    background: var(--surface);
-    border-radius: 8px;
-    border: 1px solid var(--border);
+    overflow-x: auto; background: var(--surface);
+    border-radius: 8px; border: 1px solid var(--border);
   }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-  }
-
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
   thead th {
-    position: sticky;
-    top: 0;
-    background: var(--highlight);
-    border-bottom: 2px solid var(--border);
-    padding: 0.6rem 0.75rem;
-    text-align: left;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-    font-weight: 600;
-    color: var(--accent);
+    position: sticky; top: 0; background: var(--highlight);
+    border-bottom: 2px solid var(--border); padding: 0.6rem 0.75rem;
+    text-align: left; cursor: pointer; user-select: none;
+    white-space: nowrap; font-weight: 600; color: var(--accent);
   }
   thead th:hover { background: var(--selected); }
   thead th .sort-arrow { margin-left: 4px; font-size: 0.7rem; }
-
-  tbody tr {
-    cursor: pointer;
-    transition: background 0.1s;
-  }
+  tbody tr { cursor: pointer; transition: background 0.1s; }
   tbody tr:hover { background: var(--row-hover); }
   tbody tr.selected { background: var(--selected); }
   tbody tr.watchlist-row { background: var(--gold-bg); }
   tbody tr.watchlist-row:hover { background: #f5ecd8; }
   tbody tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
-
-  td {
-    padding: 0.5rem 0.75rem;
-    white-space: nowrap;
-  }
+  td { padding: 0.5rem 0.75rem; white-space: nowrap; }
   td.wrap { white-space: normal; max-width: 300px; }
+  td .tbl-img { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; vertical-align: middle; margin-right: 0.4rem; }
 
   /* --- Detail Panel --- */
   #detail-panel {
-    display: none;
-    background: var(--surface);
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
+    display: none; background: var(--surface); border-radius: 8px;
+    border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1rem;
   }
   #detail-panel.visible { display: block; }
-
-  #detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
+  #detail-top { display: flex; gap: 1.25rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  #detail-img-wrap { flex-shrink: 0; }
+  .detail-image {
+    width: 180px; height: 180px; border-radius: 8px;
+    border: 1px solid var(--border); object-fit: cover; background: var(--highlight);
   }
-
-  #detail-header h2 {
-    font-size: 1.2rem;
-    color: var(--accent);
-  }
-
-  #detail-header a {
-    color: var(--accent);
-    text-decoration: none;
-    font-size: 0.85rem;
-  }
-  #detail-header a:hover { text-decoration: underline; }
-
+  #detail-info { flex: 1; min-width: 200px; }
+  #detail-info h2 { font-size: 1.15rem; color: var(--accent); margin-bottom: 0.25rem; }
+  #detail-info a { color: var(--accent); text-decoration: none; font-size: 0.85rem; }
+  #detail-info a:hover { text-decoration: underline; }
+  #detail-accolade { font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-top: 0.4rem; line-height: 1.5; }
   #close-detail {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 0.25rem 0.6rem;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 0.85rem;
+    background: none; border: 1px solid var(--border); border-radius: 4px;
+    padding: 0.25rem 0.6rem; cursor: pointer; color: var(--text-muted);
+    font-size: 0.85rem; align-self: flex-start;
   }
   #close-detail:hover { background: var(--highlight); }
 
   #detail-specs {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 0.5rem 1.5rem;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.5rem 1.5rem; margin-bottom: 1rem; font-size: 0.875rem;
   }
   .spec-item { display: flex; gap: 0.4rem; }
   .spec-label { font-weight: 600; color: var(--text-muted); white-space: nowrap; }
   .spec-value { color: var(--text); }
 
   .notes-section { margin-bottom: 1rem; }
-  .notes-section h3 {
-    font-size: 0.9rem;
-    color: var(--accent);
-    margin-bottom: 0.35rem;
-  }
-  .notes-section p {
-    font-size: 0.875rem;
-    color: var(--text);
-    line-height: 1.6;
-  }
+  .notes-section h3 { font-size: 0.9rem; color: var(--accent); margin-bottom: 0.35rem; }
+  .notes-section p { font-size: 0.875rem; color: var(--text); line-height: 1.6; }
 
-  .detail-image {
-    max-width: 200px;
-    max-height: 200px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    margin-bottom: 1rem;
-  }
+  #loading { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 1.1rem; }
 
-  /* --- Loading --- */
-  #loading {
-    text-align: center;
-    padding: 3rem;
-    color: var(--text-muted);
-    font-size: 1.1rem;
-  }
-
-  /* --- Responsive --- */
   @media (max-width: 768px) {
     header { flex-direction: column; align-items: stretch; }
     #search { max-width: none; }
     .watchlist-grid { grid-template-columns: 1fr; }
     #detail-specs { grid-template-columns: 1fr; }
     td { font-size: 0.8rem; padding: 0.4rem 0.5rem; }
+    .wc-img { width: 56px; height: 56px; }
   }
 </style>
 </head>
@@ -353,14 +223,19 @@
   <div id="loading">Loading roasted coffee data...</div>
 
   <div id="detail-panel">
-    <div id="detail-header">
-      <div>
-        <h2 id="detail-name"></h2>
-        <a id="detail-link" href="#" target="_blank" rel="noopener">View product</a>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div id="detail-top">
+        <div id="detail-img-wrap">
+          <img id="detail-image" class="detail-image" style="display:none" alt="">
+        </div>
+        <div id="detail-info">
+          <h2 id="detail-name"></h2>
+          <a id="detail-link" href="#" target="_blank" rel="noopener">View product</a>
+          <div id="detail-accolade"></div>
+        </div>
       </div>
       <button id="close-detail">Close</button>
     </div>
-    <img id="detail-image" class="detail-image" style="display:none" alt="">
     <div id="detail-specs"></div>
     <div id="detail-notes"></div>
   </div>
@@ -384,13 +259,15 @@
 <script>
 /* ---------- Config ---------- */
 const TABLE_COLS = [
-  { key: "title",            label: "Name",     wrap: true },
+  { key: "title",            label: "Name",     wrap: true, img: true },
   { key: "roaster_name",     label: "Roaster" },
   { key: "producer_or_farm", label: "Producer",  wrap: true },
   { key: "origin_country",   label: "Country" },
   { key: "process",          label: "Process" },
   { key: "variety_str",      label: "Variety",   wrap: true },
   { key: "price",            label: "Price",     sort: "price" },
+  { key: "weight_label",     label: "Size" },
+  { key: "price_per_oz",     label: "$/oz",      sort: "price" },
 ];
 
 const TIER_ORDER = {
@@ -412,21 +289,40 @@ let sortCol = "roaster_name";
 let sortDir = 1;
 let selectedIdx = -1;
 
+/* ---------- Helpers ---------- */
+function gramsToOz(g) { return g / 28.3495; }
+
+function computePricePerOz(p) {
+  if (!p.price_num || !p.weight_grams) return 0;
+  const oz = gramsToOz(p.weight_grams);
+  return oz > 0 ? p.price_num / oz : 0;
+}
+
+function esc(s) {
+  if (!s) return "";
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
 /* ---------- Data loading ---------- */
 fetch("roasted-data.json")
-  .then(r => {
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
-  })
+  .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
   .then(data => {
     allProducts = data
       .filter(p => p.is_coffee_product)
-      .map(p => ({
-        ...p,
-        variety_str: (p.variety || []).join(", "),
-        tasting_str: (p.tasting_notes || []).join(", "),
-        price_num: parseFloat(p.price) || 0,
-      }));
+      .map(p => {
+        const price_num = parseFloat(p.price) || 0;
+        const ppo = (price_num && p.weight_grams) ? price_num / gramsToOz(p.weight_grams) : 0;
+        return {
+          ...p,
+          variety_str: (p.variety || []).join(", "),
+          tasting_str: (p.tasting_notes || []).join(", "),
+          price_num,
+          price_per_oz: ppo,
+          price_per_oz_str: ppo ? `$${ppo.toFixed(2)}` : "",
+        };
+      });
     filtered = [...allProducts];
     document.getElementById("loading").style.display = "none";
     buildFilters();
@@ -445,25 +341,17 @@ function buildFilters() {
     (a, b) => (TIER_ORDER[a] ?? 99) - (TIER_ORDER[b] ?? 99)
   );
 
-  const roasterSel = document.getElementById("filter-roaster");
-  roasters.forEach(r => {
-    const opt = document.createElement("option");
-    opt.value = r; opt.textContent = r;
-    roasterSel.appendChild(opt);
-  });
+  populateSelect("filter-roaster", roasters);
+  populateSelect("filter-country", countries);
+  populateSelect("filter-tier", tiers);
+}
 
-  const countrySel = document.getElementById("filter-country");
-  countries.forEach(c => {
+function populateSelect(id, values) {
+  const sel = document.getElementById(id);
+  values.forEach(v => {
     const opt = document.createElement("option");
-    opt.value = c; opt.textContent = c;
-    countrySel.appendChild(opt);
-  });
-
-  const tierSel = document.getElementById("filter-tier");
-  tiers.forEach(t => {
-    const opt = document.createElement("option");
-    opt.value = t; opt.textContent = t;
-    tierSel.appendChild(opt);
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
   });
 }
 
@@ -481,7 +369,7 @@ function applyFilters() {
       const corpus = [
         p.title, p.roaster_name, p.producer_or_farm, p.origin_country,
         p.origin_region, p.process, p.variety_str, p.tasting_str,
-        p.watchlist_match, p.watchlist_tier,
+        p.watchlist_match, p.watchlist_tier, p.watchlist_credential_detail,
       ].filter(Boolean).join(" ").toLowerCase();
       if (!corpus.includes(q)) return false;
     }
@@ -520,15 +408,11 @@ function renderWatchlist() {
   const grid = document.getElementById("watchlist-grid");
   const count = document.getElementById("watchlist-count");
 
-  if (watchlistProducts.length === 0) {
-    section.style.display = "none";
-    return;
-  }
+  if (watchlistProducts.length === 0) { section.style.display = "none"; return; }
 
   section.style.display = "block";
   count.textContent = `(${watchlistProducts.length} products)`;
 
-  // Sort by tier priority
   watchlistProducts.sort((a, b) => {
     const ta = TIER_ORDER[a.watchlist_tier] ?? 99;
     const tb = TIER_ORDER[b.watchlist_tier] ?? 99;
@@ -536,34 +420,40 @@ function renderWatchlist() {
     return a.title.localeCompare(b.title);
   });
 
-  grid.innerHTML = watchlistProducts.map((p, i) => {
+  grid.innerHTML = watchlistProducts.map(p => {
     const producer = p.watchlist_match || p.producer_or_farm || "";
-    const meta = [
-      p.origin_country,
-      p.process,
-      p.variety_str,
-    ].filter(Boolean);
+    const meta = [p.origin_country, p.process, p.variety_str].filter(Boolean);
     const priceStr = p.price_num ? `$${p.price_num.toFixed(2)}` : "";
+    const perOz = p.price_per_oz_str;
+    const accolade = p.watchlist_credential_detail || "";
+    const imgTag = p.image_url
+      ? `<img class="wc-img" src="${esc(p.image_url)}" alt="" loading="lazy">`
+      : `<div class="wc-img"></div>`;
 
     return `
-      <div class="watchlist-card" data-url="${esc(p.product_url)}" onclick="showDetailByUrl('${esc(p.product_url)}')">
-        <div class="watchlist-card-header">
-          <h3>${esc(p.title)}</h3>
-          ${priceStr ? `<span class="price">${priceStr}</span>` : ""}
+      <div class="watchlist-card" onclick="showDetailByUrl('${esc(p.product_url)}')">
+        ${imgTag}
+        <div class="wc-body">
+          <div class="wc-top">
+            <h3>${esc(p.title)}</h3>
+            <div class="wc-price-block">
+              ${priceStr ? `<div class="wc-price">${priceStr}</div>` : ""}
+              ${perOz ? `<div class="wc-peroz">${perOz}/oz</div>` : ""}
+            </div>
+          </div>
+          <div class="wc-mid">
+            <span class="roaster-badge">${esc(p.roaster_name)}</span>
+            ${tierBadgeHTML(p.watchlist_tier)}
+          </div>
+          <div class="wc-producer">${esc(producer)}</div>
+          ${accolade ? `<div class="wc-accolade">${esc(accolade)}</div>` : ""}
+          <div class="wc-meta">${meta.map(m => `<span>${esc(m)}</span>`).join("")}</div>
         </div>
-        <div style="margin-bottom: 0.4rem;">
-          <span class="roaster-badge">${esc(p.roaster_name)}</span>
-          ${tierBadgeHTML(p.watchlist_tier)}
-        </div>
-        <div style="font-size: 0.85rem; color: var(--accent); margin-bottom: 0.3rem;">
-          ${esc(producer)}${p.watchlist_farm && p.watchlist_farm !== producer ? ` — ${esc(p.watchlist_farm)}` : ""}
-        </div>
-        <div class="meta">${meta.map(m => `<span>${esc(m)}</span>`).join("")}</div>
       </div>`;
   }).join("");
 }
 
-/* ---------- Table head ---------- */
+/* ---------- Table ---------- */
 function buildTableHead() {
   const tr = document.getElementById("table-head");
   tr.innerHTML = "";
@@ -575,21 +465,17 @@ function buildTableHead() {
       th.innerHTML += `<span class="sort-arrow">${sortDir > 0 ? "\u25B2" : "\u25BC"}</span>`;
     }
     th.addEventListener("click", () => {
-      if (sortCol === col.key) {
-        sortDir *= -1;
-      } else {
-        sortCol = col.key;
-        sortDir = col.key === "price" ? -1 : 1;
-      }
+      if (sortCol === col.key) { sortDir *= -1; }
+      else { sortCol = col.key; sortDir = (col.key === "price" || col.key === "price_per_oz") ? -1 : 1; }
       sortAndRender();
     });
     tr.appendChild(th);
   });
 }
 
-/* ---------- Sorting ---------- */
 function sortVal(c, key) {
   if (key === "price") return c.price_num || 0;
+  if (key === "price_per_oz") return c.price_per_oz || 0;
   const v = c[key] || "";
   return typeof v === "string" ? v.toLowerCase() : v;
 }
@@ -609,11 +495,9 @@ function sortAndRender() {
   const matchCount = filtered.filter(p => p.watchlist_match).length;
   document.getElementById("stats").textContent =
     `${filtered.length} coffees` + (matchCount ? ` (${matchCount} watchlist)` : "");
-
   document.getElementById("table-section").style.display = "block";
 }
 
-/* ---------- Table body ---------- */
 function renderTable() {
   const tbody = document.getElementById("table-body");
   tbody.innerHTML = "";
@@ -623,11 +507,18 @@ function renderTable() {
     if (c.watchlist_match) tr.classList.add("watchlist-row");
     TABLE_COLS.forEach(col => {
       const td = document.createElement("td");
-      let val = c[col.key] || "";
-      if (col.key === "price" && c.price_num) {
-        val = `$${c.price_num.toFixed(2)}`;
+      if (col.img && c.image_url) {
+        const img = document.createElement("img");
+        img.className = "tbl-img"; img.src = c.image_url; img.alt = ""; img.loading = "lazy";
+        td.appendChild(img);
+        td.appendChild(document.createTextNode(c[col.key] || ""));
+      } else if (col.key === "price" && c.price_num) {
+        td.textContent = `$${c.price_num.toFixed(2)}`;
+      } else if (col.key === "price_per_oz") {
+        td.textContent = c.price_per_oz_str;
+      } else {
+        td.textContent = c[col.key] || "";
       }
-      td.textContent = val;
       if (col.wrap) td.classList.add("wrap");
       tr.appendChild(td);
     });
@@ -639,8 +530,7 @@ function renderTable() {
 /* ---------- Detail panel ---------- */
 function showDetail(idx) {
   selectedIdx = idx;
-  const c = filtered[idx];
-  showDetailForProduct(c);
+  showDetailForProduct(filtered[idx]);
   renderTable();
 }
 
@@ -659,17 +549,29 @@ function showDetailForProduct(c) {
 
   // Image
   const img = document.getElementById("detail-image");
-  if (c.image_url) {
-    img.src = c.image_url;
-    img.style.display = "block";
-  } else {
-    img.style.display = "none";
+  if (c.image_url) { img.src = c.image_url; img.style.display = "block"; }
+  else { img.style.display = "none"; }
+
+  // Accolade
+  const accoladeEl = document.getElementById("detail-accolade");
+  let accoladeHtml = "";
+  if (c.watchlist_credential_type || c.watchlist_credential_detail) {
+    if (c.watchlist_credential_type) accoladeHtml += `<strong>${esc(c.watchlist_credential_type)}</strong>: `;
+    if (c.watchlist_credential_detail) accoladeHtml += esc(c.watchlist_credential_detail);
   }
+  if (c.watchlist_notes) {
+    if (accoladeHtml) accoladeHtml += "<br>";
+    accoladeHtml += esc(c.watchlist_notes);
+  }
+  accoladeEl.innerHTML = accoladeHtml;
 
   // Specs
+  const sizeStr = c.weight_label || (c.weight_grams ? `${c.weight_grams}g` : "");
   const specs = [
     { label: "Roaster", value: c.roaster_name },
     { label: "Price", value: c.price_num ? `$${c.price_num.toFixed(2)}` : "" },
+    { label: "Size", value: sizeStr },
+    { label: "$/oz", value: c.price_per_oz_str },
     { label: "Producer", value: c.producer_or_farm },
     { label: "Country", value: c.origin_country },
     { label: "Region", value: c.origin_region },
@@ -685,25 +587,15 @@ function showDetailForProduct(c) {
     .map(s => `<div class="spec-item"><span class="spec-label">${s.label}:</span><span class="spec-value">${esc(s.value)}</span></div>`)
     .join("");
 
-  // Tasting notes
+  // Notes
   let notesHtml = "";
   if (c.tasting_str) {
     notesHtml += `<div class="notes-section"><h3>Tasting Notes</h3><p>${esc(c.tasting_str)}</p></div>`;
-  }
-  if (c.watchlist_farm) {
-    notesHtml += `<div class="notes-section"><h3>Watchlist Farm</h3><p>${esc(c.watchlist_farm)}</p></div>`;
   }
   document.getElementById("detail-notes").innerHTML = notesHtml;
 
   panel.classList.add("visible");
   panel.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function esc(s) {
-  if (!s) return "";
-  const d = document.createElement("div");
-  d.textContent = s;
-  return d.innerHTML;
 }
 
 document.getElementById("close-detail").addEventListener("click", () => {

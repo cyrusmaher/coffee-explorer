@@ -59,9 +59,12 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
             break
 
         for p in raw_products:
-            # Extract first variant price
+            # Extract first variant price and weight
             variants = p.get("variants", [])
-            price = variants[0].get("price", "") if variants else ""
+            first_variant = variants[0] if variants else {}
+            price = first_variant.get("price", "")
+            weight_grams = first_variant.get("grams", 0) or 0
+            weight_label = first_variant.get("title", "") if first_variant.get("title") != "Default Title" else ""
 
             # Extract first image URL
             images = p.get("images", [])
@@ -84,6 +87,8 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
                 body_html=p.get("body_html", "") or "",
                 created_at=p.get("created_at", ""),
                 price=price,
+                weight_grams=weight_grams,
+                weight_label=weight_label,
                 image_url=image_url,
             )
             all_products.append(product)

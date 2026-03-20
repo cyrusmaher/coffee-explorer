@@ -32,8 +32,10 @@ class ShopifyProduct(BaseModel):
     tags: list[str] = Field(default_factory=list)
     body_html: str = ""
     created_at: str = ""
-    # First variant price
+    # First variant price and weight
     price: str = ""
+    weight_grams: int = 0  # from variant.grams
+    weight_label: str = ""  # variant title e.g. "10oz", "250g"
     # First image URL
     image_url: str = ""
 
@@ -53,6 +55,8 @@ class RoastedCoffeeProduct(BaseModel):
     product_type: str = ""
     tags: list[str] = Field(default_factory=list)
     price: str = ""
+    weight_grams: int = 0
+    weight_label: str = ""
     created_at: str = ""
 
     # LLM-extracted fields

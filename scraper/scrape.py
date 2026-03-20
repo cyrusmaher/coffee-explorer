@@ -66,6 +66,8 @@ async def run() -> None:
                 product_type=product.product_type,
                 tags=product.tags,
                 price=product.price,
+                weight_grams=product.weight_grams,
+                weight_label=product.weight_label,
                 created_at=product.created_at,
             )
 
