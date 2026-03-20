@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.claude/
+.env
+*.png
+*.jpg
+data/llm_cache.json
+data/match_cache.json

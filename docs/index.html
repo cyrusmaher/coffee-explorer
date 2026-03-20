@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffee Explorer — Roasted Coffee Tracker</title>
+<style>
+  :root {
+    --bg: #faf6f1;
+    --surface: #fff;
+    --border: #e0d5c7;
+    --text: #3b2f2f;
+    --text-muted: #7a6a5a;
+    --accent: #8b5e3c;
+    --accent-light: #c49a6c;
+    --highlight: #f5ebe0;
+    --row-hover: #fdf2e9;
+    --selected: #f0e0cc;
+    --gold: #b8860b;
+    --gold-bg: #fdf8ef;
+    --gold-border: #e8d5a8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .nav-link {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .nav-link:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+
+  #search {
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: rgba(255,255,255,0.9);
+    color: var(--text);
+  }
+  #search::placeholder { color: var(--text-muted); }
+
+  .filter-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-group select {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .filter-group select option { color: var(--text); background: var(--surface); }
+
+  #stats {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    white-space: nowrap;
+  }
+
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  /* --- Watchlist Section --- */
+  #watchlist-section {
+    margin-bottom: 1.5rem;
+  }
+
+  #watchlist-section h2 {
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #watchlist-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .watchlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .watchlist-card {
+    background: var(--gold-bg);
+    border: 1px solid var(--gold-border);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .watchlist-card:hover {
+    box-shadow: 0 2px 8px rgba(139, 94, 60, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .watchlist-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+  }
+
+  .watchlist-card h3 {
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .watchlist-card .roaster-badge {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .tier-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .tier-legend { background: #ffd700; color: #5a4700; }
+  .tier-coe-legend { background: #e8c547; color: #5a4700; }
+  .tier-wbc { background: #d4a574; color: #4a3520; }
+  .tier-coe { background: #c9b896; color: #4a3520; }
+  .tier-elite { background: #a8c4a0; color: #2d4a28; }
+  .tier-default { background: var(--border); color: var(--text-muted); }
+
+  .watchlist-card .meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+  }
+
+  .watchlist-card .price {
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* --- Table --- */
+  #table-section h2 {
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  #table-container {
+    overflow-x: auto;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--highlight);
+    border-bottom: 2px solid var(--border);
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  thead th:hover { background: var(--selected); }
+  thead th .sort-arrow { margin-left: 4px; font-size: 0.7rem; }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr.selected { background: var(--selected); }
+  tbody tr.watchlist-row { background: var(--gold-bg); }
+  tbody tr.watchlist-row:hover { background: #f5ecd8; }
+  tbody tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+
+  td {
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+  }
+  td.wrap { white-space: normal; max-width: 300px; }
+
+  /* --- Detail Panel --- */
+  #detail-panel {
+    display: none;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  #detail-panel.visible { display: block; }
+
+  #detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  #detail-header h2 {
+    font-size: 1.2rem;
+    color: var(--accent);
+  }
+
+  #detail-header a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  #detail-header a:hover { text-decoration: underline; }
+
+  #close-detail {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.25rem 0.6rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  #close-detail:hover { background: var(--highlight); }
+
+  #detail-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
+  .spec-item { display: flex; gap: 0.4rem; }
+  .spec-label { font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+  .spec-value { color: var(--text); }
+
+  .notes-section { margin-bottom: 1rem; }
+  .notes-section h3 {
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
+  }
+  .notes-section p {
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .detail-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  /* --- Loading --- */
+  #loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 768px) {
+    header { flex-direction: column; align-items: stretch; }
+    #search { max-width: none; }
+    .watchlist-grid { grid-template-columns: 1fr; }
+    #detail-specs { grid-template-columns: 1fr; }
+    td { font-size: 0.8rem; padding: 0.4rem 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Coffee Explorer</h1>
+  <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/">Sweet Maria's</a>
+  <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/hacea.html">Hacea</a>
+  <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/cbc.html">Coffee Bean Corral</a>
+  <input type="text" id="search" placeholder="Search coffees (e.g. &quot;Geisha&quot;, &quot;Ethiopia&quot;, &quot;natural&quot;)...">
+  <div class="filter-group">
+    <select id="filter-roaster"><option value="">All Roasters</option></select>
+    <select id="filter-country"><option value="">All Countries</option></select>
+    <select id="filter-tier"><option value="">All Tiers</option></select>
+  </div>
+  <span id="stats"></span>
+</header>
+
+<main>
+  <div id="loading">Loading roasted coffee data...</div>
+
+  <div id="detail-panel">
+    <div id="detail-header">
+      <div>
+        <h2 id="detail-name"></h2>
+        <a id="detail-link" href="#" target="_blank" rel="noopener">View product</a>
+      </div>
+      <button id="close-detail">Close</button>
+    </div>
+    <img id="detail-image" class="detail-image" style="display:none" alt="">
+    <div id="detail-specs"></div>
+    <div id="detail-notes"></div>
+  </div>
+
+  <section id="watchlist-section" style="display:none">
+    <h2>Watchlist Matches <span id="watchlist-count"></span></h2>
+    <div id="watchlist-grid" class="watchlist-grid"></div>
+  </section>
+
+  <section id="table-section" style="display:none">
+    <h2>All Roasted Coffees</h2>
+    <div id="table-container">
+      <table>
+        <thead><tr id="table-head"></tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- Config ---------- */
+const TABLE_COLS = [
+  { key: "title",            label: "Name",     wrap: true },
+  { key: "roaster_name",     label: "Roaster" },
+  { key: "producer_or_farm", label: "Producer",  wrap: true },
+  { key: "origin_country",   label: "Country" },
+  { key: "process",          label: "Process" },
+  { key: "variety_str",      label: "Variety",   wrap: true },
+  { key: "price",            label: "Price",     sort: "price" },
+];
+
+const TIER_ORDER = {
+  "Legend": 0, "CoE Legend": 1, "WBC Elite": 2, "WBC/CoE": 3,
+  "CoE Repeat": 4, "BoP Winner": 5, "CoE Winner": 6,
+  "Yemen Elite": 7, "Yemen Rising": 8,
+  "Ethiopia Elite": 9, "Ethiopia CoE": 10, "Ethiopia Notable": 11,
+  "Tanzania Elite": 12, "Burundi Elite": 13, "Burundi CoE": 14,
+  "Rwanda CoE": 15, "Rwanda Notable": 16,
+  "Kenya Elite": 17, "Kenya Notable": 18,
+  "Bolivia Elite": 19, "Indonesia Elite": 20, "Indonesia CoE": 21,
+  "Thailand CoE": 22, "Taiwan CoE": 23,
+};
+
+/* ---------- State ---------- */
+let allProducts = [];
+let filtered = [];
+let sortCol = "roaster_name";
+let sortDir = 1;
+let selectedIdx = -1;
+
+/* ---------- Data loading ---------- */
+fetch("roasted-data.json")
+  .then(r => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  })
+  .then(data => {
+    allProducts = data
+      .filter(p => p.is_coffee_product)
+      .map(p => ({
+        ...p,
+        variety_str: (p.variety || []).join(", "),
+        tasting_str: (p.tasting_notes || []).join(", "),
+        price_num: parseFloat(p.price) || 0,
+      }));
+    filtered = [...allProducts];
+    document.getElementById("loading").style.display = "none";
+    buildFilters();
+    buildTableHead();
+    sortAndRender();
+  })
+  .catch(err => {
+    document.getElementById("loading").textContent = "Failed to load data: " + err.message;
+  });
+
+/* ---------- Filters ---------- */
+function buildFilters() {
+  const roasters = [...new Set(allProducts.map(p => p.roaster_name))].sort();
+  const countries = [...new Set(allProducts.map(p => p.origin_country).filter(Boolean))].sort();
+  const tiers = [...new Set(allProducts.map(p => p.watchlist_tier).filter(Boolean))].sort(
+    (a, b) => (TIER_ORDER[a] ?? 99) - (TIER_ORDER[b] ?? 99)
+  );
+
+  const roasterSel = document.getElementById("filter-roaster");
+  roasters.forEach(r => {
+    const opt = document.createElement("option");
+    opt.value = r; opt.textContent = r;
+    roasterSel.appendChild(opt);
+  });
+
+  const countrySel = document.getElementById("filter-country");
+  countries.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c; opt.textContent = c;
+    countrySel.appendChild(opt);
+  });
+
+  const tierSel = document.getElementById("filter-tier");
+  tiers.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t; opt.textContent = t;
+    tierSel.appendChild(opt);
+  });
+}
+
+function applyFilters() {
+  const q = document.getElementById("search").value.toLowerCase().trim();
+  const roaster = document.getElementById("filter-roaster").value;
+  const country = document.getElementById("filter-country").value;
+  const tier = document.getElementById("filter-tier").value;
+
+  filtered = allProducts.filter(p => {
+    if (roaster && p.roaster_name !== roaster) return false;
+    if (country && p.origin_country !== country) return false;
+    if (tier && p.watchlist_tier !== tier) return false;
+    if (q) {
+      const corpus = [
+        p.title, p.roaster_name, p.producer_or_farm, p.origin_country,
+        p.origin_region, p.process, p.variety_str, p.tasting_str,
+        p.watchlist_match, p.watchlist_tier,
+      ].filter(Boolean).join(" ").toLowerCase();
+      if (!corpus.includes(q)) return false;
+    }
+    return true;
+  });
+  selectedIdx = -1;
+  sortAndRender();
+}
+
+document.getElementById("search").addEventListener("input", applyFilters);
+document.getElementById("filter-roaster").addEventListener("change", applyFilters);
+document.getElementById("filter-country").addEventListener("change", applyFilters);
+document.getElementById("filter-tier").addEventListener("change", applyFilters);
+
+/* ---------- Tier badge ---------- */
+function tierBadgeClass(tier) {
+  if (!tier) return "";
+  const t = tier.toLowerCase();
+  if (t === "legend") return "tier-legend";
+  if (t.includes("coe legend")) return "tier-coe-legend";
+  if (t.includes("wbc")) return "tier-wbc";
+  if (t.includes("coe") || t.includes("bop")) return "tier-coe";
+  if (t.includes("elite")) return "tier-elite";
+  return "tier-default";
+}
+
+function tierBadgeHTML(tier) {
+  if (!tier) return "";
+  return `<span class="tier-badge ${tierBadgeClass(tier)}">${esc(tier)}</span>`;
+}
+
+/* ---------- Watchlist section ---------- */
+function renderWatchlist() {
+  const watchlistProducts = filtered.filter(p => p.watchlist_match);
+  const section = document.getElementById("watchlist-section");
+  const grid = document.getElementById("watchlist-grid");
+  const count = document.getElementById("watchlist-count");
+
+  if (watchlistProducts.length === 0) {
+    section.style.display = "none";
+    return;
+  }
+
+  section.style.display = "block";
+  count.textContent = `(${watchlistProducts.length} products)`;
+
+  // Sort by tier priority
+  watchlistProducts.sort((a, b) => {
+    const ta = TIER_ORDER[a.watchlist_tier] ?? 99;
+    const tb = TIER_ORDER[b.watchlist_tier] ?? 99;
+    if (ta !== tb) return ta - tb;
+    return a.title.localeCompare(b.title);
+  });
+
+  grid.innerHTML = watchlistProducts.map((p, i) => {
+    const producer = p.watchlist_match || p.producer_or_farm || "";
+    const meta = [
+      p.origin_country,
+      p.process,
+      p.variety_str,
+    ].filter(Boolean);
+    const priceStr = p.price_num ? `$${p.price_num.toFixed(2)}` : "";
+
+    return `
+      <div class="watchlist-card" data-url="${esc(p.product_url)}" onclick="showDetailByUrl('${esc(p.product_url)}')">
+        <div class="watchlist-card-header">
+          <h3>${esc(p.title)}</h3>
+          ${priceStr ? `<span class="price">${priceStr}</span>` : ""}
+        </div>
+        <div style="margin-bottom: 0.4rem;">
+          <span class="roaster-badge">${esc(p.roaster_name)}</span>
+          ${tierBadgeHTML(p.watchlist_tier)}
+        </div>
+        <div style="font-size: 0.85rem; color: var(--accent); margin-bottom: 0.3rem;">
+          ${esc(producer)}${p.watchlist_farm && p.watchlist_farm !== producer ? ` — ${esc(p.watchlist_farm)}` : ""}
+        </div>
+        <div class="meta">${meta.map(m => `<span>${esc(m)}</span>`).join("")}</div>
+      </div>`;
+  }).join("");
+}
+
+/* ---------- Table head ---------- */
+function buildTableHead() {
+  const tr = document.getElementById("table-head");
+  tr.innerHTML = "";
+  TABLE_COLS.forEach(col => {
+    const th = document.createElement("th");
+    th.textContent = col.label;
+    th.dataset.key = col.key;
+    if (col.key === sortCol) {
+      th.innerHTML += `<span class="sort-arrow">${sortDir > 0 ? "\u25B2" : "\u25BC"}</span>`;
+    }
+    th.addEventListener("click", () => {
+      if (sortCol === col.key) {
+        sortDir *= -1;
+      } else {
+        sortCol = col.key;
+        sortDir = col.key === "price" ? -1 : 1;
+      }
+      sortAndRender();
+    });
+    tr.appendChild(th);
+  });
+}
+
+/* ---------- Sorting ---------- */
+function sortVal(c, key) {
+  if (key === "price") return c.price_num || 0;
+  const v = c[key] || "";
+  return typeof v === "string" ? v.toLowerCase() : v;
+}
+
+function sortAndRender() {
+  filtered.sort((a, b) => {
+    const va = sortVal(a, sortCol);
+    const vb = sortVal(b, sortCol);
+    if (va < vb) return -1 * sortDir;
+    if (va > vb) return 1 * sortDir;
+    return 0;
+  });
+  renderWatchlist();
+  renderTable();
+  buildTableHead();
+
+  const matchCount = filtered.filter(p => p.watchlist_match).length;
+  document.getElementById("stats").textContent =
+    `${filtered.length} coffees` + (matchCount ? ` (${matchCount} watchlist)` : "");
+
+  document.getElementById("table-section").style.display = "block";
+}
+
+/* ---------- Table body ---------- */
+function renderTable() {
+  const tbody = document.getElementById("table-body");
+  tbody.innerHTML = "";
+  filtered.forEach((c, i) => {
+    const tr = document.createElement("tr");
+    if (i === selectedIdx) tr.classList.add("selected");
+    if (c.watchlist_match) tr.classList.add("watchlist-row");
+    TABLE_COLS.forEach(col => {
+      const td = document.createElement("td");
+      let val = c[col.key] || "";
+      if (col.key === "price" && c.price_num) {
+        val = `$${c.price_num.toFixed(2)}`;
+      }
+      td.textContent = val;
+      if (col.wrap) td.classList.add("wrap");
+      tr.appendChild(td);
+    });
+    tr.addEventListener("click", () => showDetail(i));
+    tbody.appendChild(tr);
+  });
+}
+
+/* ---------- Detail panel ---------- */
+function showDetail(idx) {
+  selectedIdx = idx;
+  const c = filtered[idx];
+  showDetailForProduct(c);
+  renderTable();
+}
+
+function showDetailByUrl(url) {
+  const idx = filtered.findIndex(p => p.product_url === url);
+  if (idx >= 0) showDetail(idx);
+}
+
+function showDetailForProduct(c) {
+  const panel = document.getElementById("detail-panel");
+
+  document.getElementById("detail-name").textContent = c.title;
+  const link = document.getElementById("detail-link");
+  link.href = c.product_url;
+  link.textContent = `View on ${c.roaster_name} \u2192`;
+
+  // Image
+  const img = document.getElementById("detail-image");
+  if (c.image_url) {
+    img.src = c.image_url;
+    img.style.display = "block";
+  } else {
+    img.style.display = "none";
+  }
+
+  // Specs
+  const specs = [
+    { label: "Roaster", value: c.roaster_name },
+    { label: "Price", value: c.price_num ? `$${c.price_num.toFixed(2)}` : "" },
+    { label: "Producer", value: c.producer_or_farm },
+    { label: "Country", value: c.origin_country },
+    { label: "Region", value: c.origin_region },
+    { label: "Process", value: c.process },
+    { label: "Variety", value: c.variety_str },
+    { label: "Elevation", value: c.elevation },
+    { label: "Watchlist", value: c.watchlist_match },
+    { label: "Tier", value: c.watchlist_tier },
+  ];
+
+  document.getElementById("detail-specs").innerHTML = specs
+    .filter(s => s.value)
+    .map(s => `<div class="spec-item"><span class="spec-label">${s.label}:</span><span class="spec-value">${esc(s.value)}</span></div>`)
+    .join("");
+
+  // Tasting notes
+  let notesHtml = "";
+  if (c.tasting_str) {
+    notesHtml += `<div class="notes-section"><h3>Tasting Notes</h3><p>${esc(c.tasting_str)}</p></div>`;
+  }
+  if (c.watchlist_farm) {
+    notesHtml += `<div class="notes-section"><h3>Watchlist Farm</h3><p>${esc(c.watchlist_farm)}</p></div>`;
+  }
+  document.getElementById("detail-notes").innerHTML = notesHtml;
+
+  panel.classList.add("visible");
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function esc(s) {
+  if (!s) return "";
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+document.getElementById("close-detail").addEventListener("click", () => {
+  document.getElementById("detail-panel").classList.remove("visible");
+  selectedIdx = -1;
+  renderTable();
+});
+</script>
+</body>
+</html>
