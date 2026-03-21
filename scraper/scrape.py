@@ -55,12 +55,15 @@ async def run() -> None:
             if extracted and not extracted.is_coffee_product:
                 continue
 
+            # Skip archived products (sold out + $0 price = dead listing)
+            if not product.is_available and not float(product.price or "0"):
+                continue
+
             record = RoastedCoffeeProduct(
                 roaster_slug=roaster.slug,
                 roaster_name=roaster.name,
                 product_url=f"{roaster.base_url}/products/{product.handle}",
                 image_url=product.image_url,
-                currency=roaster.currency,
                 title=product.title,
                 handle=product.handle,
                 vendor=product.vendor,
