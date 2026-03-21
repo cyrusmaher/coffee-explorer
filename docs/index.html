@@ -42,6 +42,17 @@
 
   header h1 { font-size: 1.4rem; font-weight: 600; white-space: nowrap; }
 
+  .nav-tabs {
+    display: flex; align-items: flex-end; gap: 0.4rem; flex-wrap: wrap;
+  }
+  .nav-group {
+    display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+  }
+  .nav-group-label {
+    font-size: 0.6rem; font-style: italic; opacity: 0.6;
+    letter-spacing: 0.03em;
+  }
+  .nav-group-tabs { display: flex; gap: 0.25rem; }
   .nav-link {
     color: rgba(255,255,255,0.8);
     text-decoration: none;
@@ -52,6 +63,10 @@
     white-space: nowrap;
   }
   .nav-link:hover { background: rgba(255,255,255,0.15); color: #fff; }
+  .nav-link.active {
+    background: rgba(255,255,255,0.25); color: #fff;
+    border-color: rgba(255,255,255,0.6); font-weight: 600;
+  }
 
   #search {
     flex: 1; min-width: 200px; max-width: 400px;
@@ -217,9 +232,17 @@
 
 <header>
   <h1>Coffee Explorer</h1>
-  <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/">Sweet Maria's</a>
-  <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/hacea.html">Hacea</a>
-  <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/cbc.html">Coffee Bean Corral</a>
+  <nav class="nav-tabs">
+    <a class="nav-link active">Roasted</a>
+    <div class="nav-group">
+      <span class="nav-group-label">green coffee</span>
+      <div class="nav-group-tabs">
+        <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/">Sweet Maria's</a>
+        <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/hacea.html">Hacea</a>
+        <a class="nav-link" href="https://cyrusmaher.github.io/green-coffee-explorer/cbc.html">CBC</a>
+      </div>
+    </div>
+  </nav>
   <input type="text" id="search" placeholder="Search coffees (e.g. &quot;Geisha&quot;, &quot;Ethiopia&quot;, &quot;natural&quot;)...">
   <div class="filter-group">
     <select id="filter-roaster"><option value="">All Roasters</option></select>
@@ -675,7 +698,6 @@ function showDetailForProduct(c) {
   document.getElementById("detail-notes").innerHTML = notesHtml;
 
   panel.classList.add("visible");
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 document.getElementById("close-detail").addEventListener("click", () => {
