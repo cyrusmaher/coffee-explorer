@@ -58,8 +58,13 @@ Return a JSON object with these fields:
 - process (string | null): Processing method (e.g. "Washed", "Natural", "Honey", "Anaerobic Natural")
 - elevation (string | null): Growing elevation/altitude (e.g. "1800 masl", "1600-1900m")
 - tasting_notes (list[string]): Flavor/tasting notes (e.g. ["jasmine", "stone fruit", "dark chocolate"])
-- is_coffee_product (bool): true if this is a roasted coffee product. false if it's merchandise, \
-  equipment, subscriptions, gift cards, brewing gear, or non-coffee items.
+- is_coffee_product (bool): true ONLY if this is a bag of coffee beans (roasted or green/unroasted) \
+  that a consumer would brew or roast at home. Return false for ALL of the following: \
+  Nespresso/capsules/pods, ready-to-drink beverages (cold brew bottles, canned drinks), \
+  chocolate-covered beans, gift cards/gift boxes, apparel (t-shirts, hoodies, hats, turtlenecks), \
+  mugs/tumblers/glassware, brewing equipment/accessories, subscriptions/memberships, \
+  stickers/posters/candles, instant coffee, drip bags, \
+  or anything else that is not a bag of coffee beans.
 
 Return ONLY the JSON object, no markdown fences or explanation."""
 

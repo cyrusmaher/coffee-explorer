@@ -32,6 +32,7 @@ ROASTERS: list[RoasterConfig] = [
         slug="standout",
         name="Standout Coffee",
         base_url="https://standoutcoffee.com",
+        price_divisor=10.5,  # API returns SEK, convert to USD
     ),
     RoasterConfig(
         slug="dune",

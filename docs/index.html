@@ -266,7 +266,7 @@
   </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js" integrity="sha512-4xUl/d6D6THrAnXAwGajXkoWaeMNwEKK4iNfq5DotEbFlY2F8Jr3g+4cV7FGhZLbN+tKAcGJXGYi5GkqI7Nug==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js"></script>
 <script>
 /* ---------- Config ---------- */
 const TABLE_COLS = [
@@ -278,7 +278,7 @@ const TABLE_COLS = [
   { key: "variety_str",      label: "Variety",   wrap: true },
   { key: "price",            label: "Price",     sort: "price" },
   { key: "price_per_oz",     label: "$/oz",      sort: "price" },
-  { key: "sample",           label: "Sample" },
+  { key: "sample",           label: "Sample",   sort: "sample_price" },
 ];
 
 const TIER_ORDER = {
@@ -351,7 +351,9 @@ fetch("roasted-data.json")
       this.field('process');
       this.field('tasting_str');
       this.field('roaster_name');
+      this.field('origin_region');
       this.field('watchlist_match');
+      this.field('watchlist_credential_detail');
       this.ref('_idx');
       allProducts.forEach(p => { this.add(p); });
     });
@@ -398,9 +400,11 @@ function applyFilters() {
   let pool;
   if (q && searchIndex) {
     try {
-      // Try stemmed search + wildcard for partial matches
-      const results = searchIndex.search(q + '*');
-      const idxSet = new Set(results.map(r => parseInt(r.ref)));
+      // Stemmed search (handles blueberry→blueberries) + wildcard (partial matches)
+      // Union both because wildcards bypass Lunr's stemmer
+      const stemmed = searchIndex.search(q);
+      const wildcard = searchIndex.search(q + '*');
+      const idxSet = new Set([...stemmed, ...wildcard].map(r => parseInt(r.ref)));
       pool = allProducts.filter(p => idxSet.has(p._idx));
     } catch {
       // If Lunr query syntax error, fall back to substring
@@ -409,7 +413,7 @@ function applyFilters() {
         const corpus = [
           p.title, p.roaster_name, p.producer_or_farm, p.origin_country,
           p.origin_region, p.process, p.variety_str, p.tasting_str,
-          p.watchlist_match, p.watchlist_tier,
+          p.watchlist_match, p.watchlist_tier, p.watchlist_credential_detail,
         ].filter(Boolean).join(" ").toLowerCase();
         return corpus.includes(ql);
       });
@@ -524,7 +528,7 @@ function buildTableHead() {
     }
     th.addEventListener("click", () => {
       if (sortCol === col.key) { sortDir *= -1; }
-      else { sortCol = col.key; sortDir = (col.key === "price" || col.key === "price_per_oz") ? -1 : 1; }
+      else { sortCol = col.key; sortDir = (col.key === "price" || col.key === "price_per_oz" || col.key === "sample") ? -1 : 1; }
       sortAndRender();
     });
     tr.appendChild(th);
@@ -534,6 +538,7 @@ function buildTableHead() {
 function sortVal(c, key) {
   if (key === "price") return c.price_num || 0;
   if (key === "price_per_oz") return c.price_per_oz || 0;
+  if (key === "sample") return c.sample_price_num || 0;
   const v = c[key] || "";
   return typeof v === "string" ? v.toLowerCase() : v;
 }

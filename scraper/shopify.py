@@ -25,37 +25,12 @@ HEADERS = {
     "Accept": "application/json",
 }
 
-# ---------- Deterministic non-coffee filter ----------
-# Products matching these patterns are definitively not roasted coffee beans.
-# Applied before the LLM filter to catch obvious non-coffee items cheaply.
-NON_COFFEE_PATTERNS = [
-    r"nespresso", r"capsule", r"pod\b", r"cold brew bottle",
-    r"chocolate.?covered", r"gift\s*card", r"gift\s*box", r"cometeer",
-    r"energy drink", r"glassware", r"ceramics", r"\bmug\b", r"tumbler",
-    r"t-shirt", r"\btote\b", r"\bhat\b", r"beanie", r"candle",
-    r"instant coffee", r"drip bag",
-]
-_NON_COFFEE_RE = re.compile("|".join(NON_COFFEE_PATTERNS), re.IGNORECASE)
-
-NON_COFFEE_PRODUCT_TYPES = {
-    "gift cards", "glassware", "apparel", "merchandise", "accessories",
-    "gear", "equipment",
-}
-
-
-def _is_non_coffee_deterministic(title: str, product_type: str, tags: list[str]) -> bool:
-    """Return True if the product is definitively not roasted coffee beans."""
-    if _NON_COFFEE_RE.search(title):
-        return True
-    if product_type.lower().strip() in NON_COFFEE_PRODUCT_TYPES:
-        return True
-    tags_str = " ".join(tags).lower()
-    if _NON_COFFEE_RE.search(tags_str):
-        return True
-    return False
-
-
 # ---------- Variant selection ----------
+
+_WEIGHT_RE = re.compile(
+    r"(\d+(?:\.\d+)?)\s*(oz|grams?|gr|lbs?|kg)s?\b", re.IGNORECASE,
+)
+
 
 def _parse_variant_grams(variant: dict) -> int:
     """Extract weight in grams from a variant, trying grams field then title."""
@@ -63,15 +38,15 @@ def _parse_variant_grams(variant: dict) -> int:
     if grams > 0:
         return grams
 
-    # Try to parse from variant title (e.g. "250g", "10oz", "1lb")
+    # Try to parse from variant title (e.g. "250g", "10oz", "1lb", "5lbs")
     title = variant.get("title", "")
-    m = re.search(r"(\d+(?:\.\d+)?)\s*(oz|g|gr|lb|kg)\b", title, re.IGNORECASE)
+    m = _WEIGHT_RE.search(title)
     if not m:
         return 0
 
     val = float(m.group(1))
-    unit = m.group(2).lower()
-    if unit in ("g", "gr"):
+    unit = m.group(2).lower().rstrip("s")  # normalize plurals
+    if unit in ("g", "gr", "gram"):
         return int(val)
     if unit == "oz":
         return int(val * 28.3495)
@@ -83,9 +58,13 @@ def _parse_variant_grams(variant: dict) -> int:
 
 
 def _variant_weight_label(variant: dict, grams: int) -> str:
-    """Build a human-readable weight label for a variant."""
+    """Build a human-readable weight label for a variant.
+
+    Preserves the original title if it contains a valid weight string
+    (e.g. "5LB", "12oz"), otherwise derives from grams.
+    """
     raw_label = variant.get("title", "")
-    if raw_label and re.search(r"\d+\s*(oz|g|gr|lb|kg)\b", raw_label, re.IGNORECASE):
+    if raw_label and _WEIGHT_RE.search(raw_label):
         return raw_label
     if grams > 0:
         oz = grams / 28.3495
@@ -103,8 +82,15 @@ def _pick_variants(variants: list[dict]) -> tuple[dict, dict | None]:
     if not variants:
         return {}, None
 
-    # Parse grams for all variants
-    parsed = [(v, _parse_variant_grams(v)) for v in variants]
+    # Parse grams for all variants; exclude zero-priced placeholder variants
+    parsed = [
+        (v, _parse_variant_grams(v))
+        for v in variants
+        if float(v.get("price", "0") or "0") > 0
+    ]
+    if not parsed:
+        # All variants are zero-priced — fall back to raw list
+        parsed = [(v, _parse_variant_grams(v)) for v in variants]
 
     # Separate available from unavailable
     available = [(v, g) for v, g in parsed if v.get("available", False)]
@@ -188,7 +174,8 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
             standard_v, sample_v = _pick_variants(variants)
 
             # Standard variant fields
-            price = standard_v.get("price", "")
+            price_raw = float(standard_v.get("price", "0") or "0")
+            price = f"{price_raw / roaster.price_divisor:.2f}" if price_raw else ""
             weight_grams = _parse_variant_grams(standard_v)
             weight_label = _variant_weight_label(standard_v, weight_grams)
 
@@ -197,7 +184,8 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
             sample_grams = 0
             sample_label = ""
             if sample_v is not None:
-                sample_price = sample_v.get("price", "")
+                sample_raw = float(sample_v.get("price", "0") or "0")
+                sample_price = f"{sample_raw / roaster.price_divisor:.2f}" if sample_raw else ""
                 sample_grams = _parse_variant_grams(sample_v)
                 sample_label = _variant_weight_label(sample_v, sample_grams)
 
@@ -223,17 +211,6 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
                 sample_label=sample_label,
                 image_url=image_url,
             )
-
-            # Deterministic non-coffee filter — mark before LLM sees it
-            if _is_non_coffee_deterministic(title, product_type, tags):
-                log.debug(
-                    "[%s] Deterministic filter: skipping non-coffee '%s'",
-                    roaster.slug, title,
-                )
-                # Still include in results so scrape.py can skip it,
-                # but we set a flag via the product_type convention.
-                # Actually, we just won't append it — the LLM won't see it either.
-                continue
 
             all_products.append(product)
 

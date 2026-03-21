@@ -8,6 +8,8 @@ class RoasterConfig(BaseModel):
     slug: str
     name: str
     base_url: str  # e.g. "https://onyxcoffeelab.com"
+    price_divisor: float = 1.0  # divide API prices by this to get USD (e.g. 10.5 for SEK)
+    currency: str = "USD"  # ISO 4217 code
 
 
 class ExtractedCoffee(BaseModel):
@@ -52,6 +54,7 @@ class RoastedCoffeeProduct(BaseModel):
     roaster_name: str
     product_url: str
     image_url: str = ""
+    currency: str = "USD"
 
     # Shopify fields
     title: str

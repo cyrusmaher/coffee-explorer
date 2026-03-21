@@ -60,6 +60,7 @@ async def run() -> None:
                 roaster_name=roaster.name,
                 product_url=f"{roaster.base_url}/products/{product.handle}",
                 image_url=product.image_url,
+                currency=roaster.currency,
                 title=product.title,
                 handle=product.handle,
                 vendor=product.vendor,
