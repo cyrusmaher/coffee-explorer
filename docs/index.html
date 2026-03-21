@@ -180,41 +180,34 @@
   td.wrap { white-space: normal; max-width: 300px; }
   td .tbl-img { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; vertical-align: middle; margin-right: 0.4rem; }
 
-  /* --- Detail Panel --- */
-  #detail-panel {
-    display: none; background: var(--surface); border-radius: 8px;
-    border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1rem;
+  /* --- Inline Detail Row --- */
+  .detail-row td {
+    padding: 0; border-bottom: 2px solid var(--accent-light) !important;
   }
-  #detail-panel.visible { display: block; }
-  #detail-top { display: flex; gap: 1.25rem; margin-bottom: 1rem; flex-wrap: wrap; }
-  #detail-img-wrap { flex-shrink: 0; }
-  .detail-image {
-    width: 180px; height: 180px; border-radius: 8px;
-    border: 1px solid var(--border); object-fit: cover; background: var(--highlight);
+  .detail-inner {
+    padding: 1rem 1.25rem; background: var(--highlight);
   }
-  #detail-info { flex: 1; min-width: 200px; }
-  #detail-info h2 { font-size: 1.15rem; color: var(--accent); margin-bottom: 0.25rem; }
-  #detail-info a { color: var(--accent); text-decoration: none; font-size: 0.85rem; }
-  #detail-info a:hover { text-decoration: underline; }
-  #detail-accolade { font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-top: 0.4rem; line-height: 1.5; }
-  #close-detail {
-    background: none; border: 1px solid var(--border); border-radius: 4px;
-    padding: 0.25rem 0.6rem; cursor: pointer; color: var(--text-muted);
-    font-size: 0.85rem; align-self: flex-start;
+  .detail-top { display: flex; gap: 1.25rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .detail-img {
+    width: 140px; height: 140px; border-radius: 8px;
+    border: 1px solid var(--border); object-fit: cover; background: var(--surface);
+    flex-shrink: 0;
   }
-  #close-detail:hover { background: var(--highlight); }
-
-  #detail-specs {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 0.5rem 1.5rem; margin-bottom: 1rem; font-size: 0.875rem;
+  .detail-header { flex: 1; min-width: 200px; }
+  .detail-header h3 { font-size: 1.05rem; color: var(--accent); margin-bottom: 0.2rem; }
+  .detail-header a { color: var(--accent); text-decoration: none; font-size: 0.82rem; }
+  .detail-header a:hover { text-decoration: underline; }
+  .detail-accolade { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-top: 0.35rem; line-height: 1.5; }
+  .detail-specs {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.4rem 1.25rem; margin-bottom: 0.75rem; font-size: 0.84rem;
   }
   .spec-item { display: flex; gap: 0.4rem; }
   .spec-label { font-weight: 600; color: var(--text-muted); white-space: nowrap; }
   .spec-value { color: var(--text); }
-
-  .notes-section { margin-bottom: 1rem; }
-  .notes-section h3 { font-size: 0.9rem; color: var(--accent); margin-bottom: 0.35rem; }
-  .notes-section p { font-size: 0.875rem; color: var(--text); line-height: 1.6; }
+  .notes-section { margin-bottom: 0.5rem; }
+  .notes-section h3 { font-size: 0.85rem; color: var(--accent); margin-bottom: 0.25rem; }
+  .notes-section p { font-size: 0.84rem; color: var(--text); line-height: 1.5; }
 
   #loading { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 1.1rem; }
 
@@ -254,24 +247,6 @@
 
 <main>
   <div id="loading">Loading roasted coffee data...</div>
-
-  <div id="detail-panel">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-      <div id="detail-top">
-        <div id="detail-img-wrap">
-          <img id="detail-image" class="detail-image" style="display:none" alt="">
-        </div>
-        <div id="detail-info">
-          <h2 id="detail-name"></h2>
-          <a id="detail-link" href="#" target="_blank" rel="noopener">View product</a>
-          <div id="detail-accolade"></div>
-        </div>
-      </div>
-      <button id="close-detail">Close</button>
-    </div>
-    <div id="detail-specs"></div>
-    <div id="detail-notes"></div>
-  </div>
 
   <section id="watchlist-section" style="display:none">
     <h2>Watchlist Matches <span id="watchlist-count"></span></h2>
@@ -624,14 +599,25 @@ function renderTable() {
     });
     tr.addEventListener("click", () => showDetail(i));
     tbody.appendChild(tr);
+
+    // Inline detail row
+    if (i === selectedIdx) {
+      const detailTr = document.createElement("tr");
+      detailTr.className = "detail-row";
+      const detailTd = document.createElement("td");
+      detailTd.colSpan = TABLE_COLS.length;
+      detailTd.innerHTML = buildDetailHTML(c);
+      detailTr.appendChild(detailTd);
+      tbody.appendChild(detailTr);
+    }
   });
 }
 
-/* ---------- Detail panel ---------- */
+/* ---------- Inline detail ---------- */
 function showDetail(idx) {
-  selectedIdx = idx;
-  showDetailForProduct(filtered[idx]);
+  selectedIdx = selectedIdx === idx ? -1 : idx;  // toggle
   renderTable();
+  buildTableHead();
 }
 
 function showDetailByUrl(url) {
@@ -639,36 +625,21 @@ function showDetailByUrl(url) {
   if (idx >= 0) showDetail(idx);
 }
 
-function showDetailForProduct(c) {
-  const panel = document.getElementById("detail-panel");
-
-  document.getElementById("detail-name").textContent = c.title;
-  const link = document.getElementById("detail-link");
-  link.href = c.product_url;
-  link.textContent = `View on ${c.roaster_name} \u2192`;
-
-  // Image
-  const img = document.getElementById("detail-image");
-  if (c.image_url) { img.src = c.image_url; img.style.display = "block"; }
-  else { img.style.display = "none"; }
-
-  // Accolade
-  const accoladeEl = document.getElementById("detail-accolade");
-  let accoladeHtml = "";
-  if (c.watchlist_credential_type || c.watchlist_credential_detail) {
-    if (c.watchlist_credential_type) accoladeHtml += `<strong>${esc(c.watchlist_credential_type)}</strong>: `;
-    if (c.watchlist_credential_detail) accoladeHtml += esc(c.watchlist_credential_detail);
-  }
-  if (c.watchlist_notes) {
-    if (accoladeHtml) accoladeHtml += "<br>";
-    accoladeHtml += esc(c.watchlist_notes);
-  }
-  accoladeEl.innerHTML = accoladeHtml;
-
-  // Specs
+function buildDetailHTML(c) {
   const sizeStr = c.weight_label || (c.weight_grams ? `${c.weight_grams}g` : "");
   const availStr = c.is_available === false ? "Sold Out" : "In Stock";
   const sampleStr = c.sample_display || "";
+
+  let accolade = "";
+  if (c.watchlist_credential_type || c.watchlist_credential_detail) {
+    if (c.watchlist_credential_type) accolade += `<strong>${esc(c.watchlist_credential_type)}</strong>: `;
+    if (c.watchlist_credential_detail) accolade += esc(c.watchlist_credential_detail);
+  }
+  if (c.watchlist_notes) {
+    if (accolade) accolade += "<br>";
+    accolade += esc(c.watchlist_notes);
+  }
+
   const specs = [
     { label: "Roaster", value: c.roaster_name },
     { label: "Price", value: priceWithSize(c.price_num, sizeStr) },
@@ -683,28 +654,33 @@ function showDetailForProduct(c) {
     { label: "Elevation", value: c.elevation },
     { label: "Watchlist", value: c.watchlist_match },
     { label: "Tier", value: c.watchlist_tier },
-  ];
+  ].filter(s => s.value);
 
-  document.getElementById("detail-specs").innerHTML = specs
-    .filter(s => s.value)
+  const specsHtml = specs
     .map(s => `<div class="spec-item"><span class="spec-label">${s.label}:</span><span class="spec-value">${esc(String(s.value))}</span></div>`)
     .join("");
 
-  // Notes
-  let notesHtml = "";
-  if (c.tasting_str) {
-    notesHtml += `<div class="notes-section"><h3>Tasting Notes</h3><p>${esc(c.tasting_str)}</p></div>`;
-  }
-  document.getElementById("detail-notes").innerHTML = notesHtml;
+  const notesHtml = c.tasting_str
+    ? `<div class="notes-section"><h3>Tasting Notes</h3><p>${esc(c.tasting_str)}</p></div>`
+    : "";
 
-  panel.classList.add("visible");
+  const imgHtml = c.image_url
+    ? `<img class="detail-img" src="${esc(c.image_url)}" alt="" loading="lazy">`
+    : "";
+
+  return `<div class="detail-inner">
+    <div class="detail-top">
+      ${imgHtml}
+      <div class="detail-header">
+        <h3>${esc(c.title)}</h3>
+        <a href="${esc(c.product_url)}" target="_blank" rel="noopener">View on ${esc(c.roaster_name)} \u2192</a>
+        ${accolade ? `<div class="detail-accolade">${accolade}</div>` : ""}
+      </div>
+    </div>
+    <div class="detail-specs">${specsHtml}</div>
+    ${notesHtml}
+  </div>`;
 }
-
-document.getElementById("close-detail").addEventListener("click", () => {
-  document.getElementById("detail-panel").classList.remove("visible");
-  selectedIdx = -1;
-  renderTable();
-});
 </script>
 </body>
 </html>
