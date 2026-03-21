@@ -355,9 +355,6 @@ const PROCESS_LINKS = {
   "Washed": "https://en.wikipedia.org/wiki/Coffee_processing#Wet_processing",
   "Natural": "https://en.wikipedia.org/wiki/Coffee_processing#Dry_processing",
   "Honey": "https://en.wikipedia.org/wiki/Coffee_processing#Honey_process",
-  "Anaerobic": "https://en.wikipedia.org/wiki/Coffee_processing#Anaerobic_fermentation",
-  "Anaerobic Natural": "https://en.wikipedia.org/wiki/Coffee_processing#Anaerobic_fermentation",
-  "Anaerobic Washed": "https://en.wikipedia.org/wiki/Coffee_processing#Anaerobic_fermentation",
   "Carbonic Maceration": "https://en.wikipedia.org/wiki/Coffee_processing#Carbonic_maceration",
 };
 
@@ -383,12 +380,9 @@ const PRODUCER_LINKS = {
   "Ninety Plus": "https://www.ninetypluscoffee.com/",
   "Qima Coffee": "https://www.qimacoffee.com/",
   "Qima Cafe": "https://www.qimacoffee.com/",
-  "Benjamin Paz": "https://www.blackwhiteroasters.com/pages/benjamin-paz-producer-partnerships",
   "Jairo Arcila": "https://www.cofinet.com.au/jairo-arcila/",
   "Jairo Arcila, Finca Santa Mónica": "https://www.cofinet.com.au/jairo-arcila/",
   "Jairo Arcila, Finca Santa Monica": "https://www.cofinet.com.au/jairo-arcila/",
-  "Diego Bermudez": "https://www.thecoffeequest.com/diego-samuel-bermudez-cauca/",
-  "Nestor Lasso": "https://magazine.coffee/blog/1/6818/colombia-coffee-producer-interviews-nestor-lasso",
   "Ninety Plus Coffee": "https://www.ninetypluscoffee.com/",
 };
 
@@ -399,12 +393,8 @@ function linkVariety(v) {
 
 function linkProcess(p) {
   if (!p) return "";
-  let url = PROCESS_LINKS[p];
-  if (!url) {
-    for (const [key, val] of Object.entries(PROCESS_LINKS)) {
-      if (p.toLowerCase().includes(key.toLowerCase())) { url = val; break; }
-    }
-  }
+  // Exact match only — no partial matching to avoid overly generic links
+  const url = PROCESS_LINKS[p];
   return url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(p)}</a>` : esc(p);
 }
 
@@ -771,14 +761,16 @@ function toggleWatchlistDetail(cardEl, url) {
   document.querySelectorAll('.watchlist-card.expanded').forEach(el => el.classList.remove('expanded'));
   const p = allProducts.find(p => p.product_url === url);
   if (!p) return;
-  // Move card to start of its visual row so it spans full width cleanly
+  // Move cards that were before this one in the same row to after it,
+  // so the expanded card is first on its row and everything else flows below
   const grid = cardEl.parentElement;
   const cols = Math.max(1, Math.floor(grid.offsetWidth / 340));
   const cards = [...grid.querySelectorAll('.watchlist-card')];
   const idx = cards.indexOf(cardEl);
   const rowStart = Math.floor(idx / cols) * cols;
-  if (idx !== rowStart) {
-    grid.insertBefore(cardEl, cards[rowStart]);
+  // Move earlier same-row cards to just after the expanded card
+  for (let i = rowStart; i < idx; i++) {
+    cardEl.after(cards[i]);
   }
   cardEl.classList.add('expanded');
   const div = document.createElement('div');
