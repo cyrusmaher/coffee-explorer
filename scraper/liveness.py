@@ -10,6 +10,10 @@ import json
 import logging
 import sys
 import time
+
+from dotenv import load_dotenv
+
+load_dotenv()
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path

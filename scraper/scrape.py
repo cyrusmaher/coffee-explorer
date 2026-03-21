@@ -14,6 +14,10 @@ import logging
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from scraper.extract import extract_products
 from scraper.match import load_watchlist, match_products
 from scraper.models import RoastedCoffeeProduct
