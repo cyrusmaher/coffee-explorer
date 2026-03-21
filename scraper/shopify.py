@@ -58,14 +58,11 @@ def _parse_variant_grams(variant: dict) -> int:
 
 
 def _variant_weight_label(variant: dict, grams: int) -> str:
-    """Build a human-readable weight label for a variant.
-
-    Preserves the original title if it contains a valid weight string
-    (e.g. "5LB", "12oz"), otherwise derives from grams.
-    """
+    """Extract a concise weight label like '12oz' or '250g' from a variant."""
     raw_label = variant.get("title", "")
-    if raw_label and _WEIGHT_RE.search(raw_label):
-        return raw_label
+    m = _WEIGHT_RE.search(raw_label)
+    if m:
+        return m.group(0)  # just "100gr", "12oz", "5LB" — not the surrounding text
     if grams > 0:
         oz = grams / 28.3495
         return f"{oz:.0f}oz" if oz >= 1 else f"{grams}g"
