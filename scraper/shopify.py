@@ -164,6 +164,10 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
             title = p.get("title", "")
             product_type = p.get("product_type", "")
 
+            # Skip products tagged as archived by the roaster
+            if any(t.lower() == "archived" for t in tags):
+                continue
+
             # Availability: product is in-stock if ANY variant is available
             is_available = any(v.get("available", False) for v in variants)
 
