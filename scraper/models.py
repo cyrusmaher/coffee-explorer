@@ -88,3 +88,4 @@ class RoastedCoffeeProduct(BaseModel):
     watchlist_credential_type: str | None = None   # e.g. "ACE Legend of Excellence"
     watchlist_credential_detail: str | None = None  # e.g. "5x CoE winner; 1st place 2022 & 2024"
     watchlist_notes: str | None = None  # additional context from watchlist
+    watchlist_url: str | None = None   # producer website or profile URL

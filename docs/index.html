@@ -358,56 +358,20 @@ const PROCESS_LINKS = {
   "Carbonic Maceration": "https://en.wikipedia.org/wiki/Coffee_processing#Carbonic_maceration",
 };
 
-// Producer official websites (verified via web search)
-const PRODUCER_LINKS = {
-  "Finca Deborah": "https://www.fincadeborah.com/",
-  "Hacienda La Esmeralda": "https://haciendaesmeralda.com/",
-  "Savage Coffees": "https://savagecoffees.co/",
-  "Gesha Village Estate": "https://www.geshavillage.com/",
-  "Gesha Village Coffee Estate": "https://www.geshavillage.com/",
-  "Los Nogales": "https://www.nogales.co/",
-  "Finca El Injerto": "https://fincaelinjerto.com/",
-  "Elida Estate": "https://lamastusfamilyestates.com/",
-  "Daterra": "https://daterracoffee.com.br/",
-  "La Palma Y El Tucán": "https://www.lapalmayeltucan.com/",
-  "La Palma y el Tucán": "https://www.lapalmayeltucan.com/",
-  "Cafe Granja La Esperanza": "https://cafegranjalaesperanza.com/",
-  "Inmaculada farms": "https://www.inmaculadacoffeefarms.com/",
-  "Inmaculada Farms": "https://www.inmaculadacoffeefarms.com/",
-  "Janson Coffee": "https://jansoncoffee.com/",
-  "Janson Family": "https://jansoncoffee.com/",
-  "Longboard": "https://longboardcoffees.com/",
-  "Ninety Plus": "https://www.ninetypluscoffee.com/",
-  "Qima Coffee": "https://www.qimacoffee.com/",
-  "Qima Cafe": "https://www.qimacoffee.com/",
-  "Jairo Arcila": "https://www.cofinet.com.au/jairo-arcila/",
-  "Jairo Arcila, Finca Santa Mónica": "https://www.cofinet.com.au/jairo-arcila/",
-  "Jairo Arcila, Finca Santa Monica": "https://www.cofinet.com.au/jairo-arcila/",
-  "Ninety Plus Coffee": "https://www.ninetypluscoffee.com/",
-  "Joseph Brodsky": "https://www.ninetypluscoffee.com/",
-  "Aguirre Family": "https://fincaelinjerto.com/",
-  "Herrera Family": "https://cafegranjalaesperanza.com/",
-  "Mokhtar Alkhanshali": "https://portofmokha.com/",
-  "Adam Overton & Rachel Samuel": "https://www.geshavillage.com/",
-  "Ben & Kristy Carlson": "https://longmilescoffee.com/",
-  // Competition profiles (ACE, CoE, etc.)
-  "Benjamin Paz": "https://allianceforcoffeeexcellence.org/legends/",
-  "Juan Diego De La Cerda": "https://allianceforcoffeeexcellence.org/team/diego-de-la-cerda/",
-  "Juan Diego": "https://allianceforcoffeeexcellence.org/team/diego-de-la-cerda/",
-  "Ernesto Menéndez": "https://allianceforcoffeeexcellence.org/legends/",
-  "Ernesto Menendez": "https://allianceforcoffeeexcellence.org/legends/",
-  "Diego Bermudez": "https://allianceforcoffeeexcellence.org/directory/89-76-4/",
-  "Edinson Argote": "https://cupofexcellence.org/directory/87-41-5/",
-  "Tamiru Tadesse Tesema": "https://alo-coffee.com/about/",
-  "Tamiru Tadesse": "https://alo-coffee.com/about/",
-  "Jhoan Vergara": "https://typica.coffee/en/narratives/producers/las-flores/",
-  "Pepe Jijón": "https://magazine.coffee/blog/1/6738/meet-the-coffee-producer-pepe-jijon-of-finca-soledad-ecuador",
-  "Pepe Jijon": "https://magazine.coffee/blog/1/6738/meet-the-coffee-producer-pepe-jijon-of-finca-soledad-ecuador",
-};
+// Producer URLs loaded from watchlist_url field in data (see producer_watchlist.csv)
+
+function displayVariety(v) {
+  // Normalize Geisha → Gesha for display (Gesha is the correct spelling per origin)
+  if (v === "Geisha") return "Gesha";
+  if (v === "Green Tip Geisha") return "Green Tip Gesha";
+  if (v === "Gori Geisha") return "Gori Gesha";
+  return v;
+}
 
 function linkVariety(v) {
+  const display = displayVariety(v);
   const url = VARIETY_LINKS[v];
-  return url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(v)}</a>` : esc(v);
+  return url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(display)}</a>` : esc(display);
 }
 
 function linkProcess(p) {
@@ -417,21 +381,13 @@ function linkProcess(p) {
   return url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(p)}</a>` : esc(p);
 }
 
-function linkProducer(name) {
+function linkProducer(name, url) {
   if (!name) return "";
-  // Check for exact or partial match in known producers
-  let url = PRODUCER_LINKS[name];
-  if (!url) {
-    for (const [key, val] of Object.entries(PRODUCER_LINKS)) {
-      if (name.includes(key) || key.includes(name)) { url = val; break; }
-    }
-  }
   if (url) {
-    return `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(name)}</a>`;
+    const href = url.startsWith("http") ? url : "https://" + url;
+    return `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(name)}</a>`;
   }
-  // Fallback: Google search
-  const q = encodeURIComponent(name + " coffee producer");
-  return `<a href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--text-muted)">${esc(name)}</a>`;
+  return esc(name);
 }
 
 /* ---------- State ---------- */
@@ -471,7 +427,7 @@ fetch("roasted-data.json")
         return {
           ...p,
           _idx: i,
-          variety_str: (p.variety || []).join(", "),
+          variety_str: (p.variety || []).map(v => v === "Geisha" ? "Gesha" : v).join(", "),
           tasting_str: (p.tasting_notes || []).join(", "),
           price_num,
           price_per_oz: ppo,
@@ -815,7 +771,7 @@ function buildDetailHTML(c) {
   }
 
   // Build linked values for producer, variety, process
-  const producerHtml = c.producer_or_farm ? linkProducer(c.producer_or_farm) : "";
+  const producerHtml = c.producer_or_farm ? linkProducer(c.producer_or_farm, c.watchlist_url) : "";
   const varietyHtml = (c.variety || []).map(v => linkVariety(v)).join(", ");
   const processHtml = c.process ? linkProcess(c.process) : "";
 

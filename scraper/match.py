@@ -402,6 +402,7 @@ async def match_products(
         product.watchlist_credential_type = matched.get("credential_type", "")
         product.watchlist_credential_detail = matched.get("credential_detail", "")
         product.watchlist_notes = matched.get("notes", "")
+        product.watchlist_url = matched.get("direct_sales_url", "")
 
     for product in products:
         if not product.is_coffee_product:
