@@ -157,7 +157,7 @@
   .tier-elite { background: #a8c4a0; color: #2d4a28; }
   .tier-default { background: var(--border); color: var(--text-muted); }
 
-  .wc-producer { font-size: 0.82rem; color: var(--accent); margin-bottom: 0.2rem; }
+  .wc-producer { font-size: 0.82rem; color: var(--text); margin-bottom: 0.2rem; }
   .wc-accolade { font-size: 0.72rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .wc-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; }
   .wc-detail {
@@ -371,21 +371,21 @@ function displayVariety(v) {
 function linkVariety(v) {
   const display = displayVariety(v);
   const url = VARIETY_LINKS[v];
-  return url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(display)}</a>` : esc(display);
+  return url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;text-decoration:underline;text-underline-offset:2px">${esc(display)}</a>` : esc(display);
 }
 
 function linkProcess(p) {
   if (!p) return "";
   // Exact match only — no partial matching to avoid overly generic links
   const url = PROCESS_LINKS[p];
-  return url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(p)}</a>` : esc(p);
+  return url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;text-decoration:underline;text-underline-offset:2px">${esc(p)}</a>` : esc(p);
 }
 
 function linkProducer(name, url) {
   if (!name) return "";
   if (url) {
     const href = url.startsWith("http") ? url : "https://" + url;
-    return `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent-light)">${esc(name)}</a>`;
+    return `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;text-decoration:underline;text-underline-offset:2px">${esc(name)}</a>`;
   }
   return esc(name);
 }
