@@ -74,4 +74,9 @@ ROASTERS: list[RoasterConfig] = [
         name="Formative Coffee",
         base_url="https://formative.coffee",
     ),
+    RoasterConfig(
+        slug="littlewaves",
+        name="Little Waves Coffee",
+        base_url="https://littlewaves.coffee",
+    ),
 ]
