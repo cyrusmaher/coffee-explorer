@@ -46,7 +46,9 @@
     display: flex; align-items: flex-end; gap: 0.4rem; flex-wrap: wrap;
   }
   .nav-group {
-    display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px; padding: 0.25rem 0.4rem 0.35rem;
   }
   .nav-group-label {
     font-size: 0.6rem; font-style: italic; opacity: 0.6;
@@ -255,6 +257,12 @@
     table { font-size: 0.8rem; }
     td { font-size: 0.8rem; padding: 0.4rem 0.5rem; }
     thead th { padding: 0.5rem; font-size: 0.78rem; }
+    /* Hide Producer, Variety, Sample columns on tablet */
+    td:nth-child(3), th:nth-child(3),
+    td:nth-child(6), th:nth-child(6),
+    td:nth-child(9), th:nth-child(9) { display: none; }
+    /* Let Name column wrap */
+    td:first-child { white-space: normal; min-width: 120px; }
   }
 
   /* --- Small phone --- */
@@ -282,6 +290,11 @@
     .notes-section p { font-size: 0.78rem; }
     #watchlist-section h2 { font-size: 0.95rem; }
     #table-section h2 { font-size: 0.95rem; }
+    /* Also hide Process, $/oz on small phones — keep Name, Roaster, Country, Price */
+    td:nth-child(5), th:nth-child(5),
+    td:nth-child(8), th:nth-child(8) { display: none; }
+    /* Smaller table images */
+    td .tbl-img { width: 24px; height: 24px; }
   }
 </style>
 </head>
