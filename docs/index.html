@@ -138,10 +138,16 @@
 
   .wc-body { flex: 1; min-width: 0; }
 
-  .wc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.3rem; }
-  .wc-top h3 { font-size: 0.9rem; color: var(--text); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; }
+  .wc-top {
+    display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.3rem;
+    gap: 0.5rem; flex-wrap: wrap; min-width: 0;
+  }
+  .wc-top h3 {
+    font-size: 0.9rem; color: var(--text); line-height: 1.3;
+    flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; word-break: break-word;
+  }
 
-  .wc-price-block { text-align: right; flex-shrink: 0; margin-left: 0.5rem; }
+  .wc-price-block { text-align: right; flex-shrink: 0; margin-left: auto; max-width: 100%; }
   .wc-price { font-weight: 600; color: var(--accent); font-size: 0.9rem; }
   .wc-peroz { font-size: 0.7rem; color: var(--text-muted); }
   .wc-sample { font-size: 0.7rem; color: var(--text-muted); }
@@ -160,9 +166,16 @@
   .tier-elite { background: #a8c4a0; color: #2d4a28; }
   .tier-default { background: var(--border); color: var(--text-muted); }
 
-  .wc-producer { font-size: 0.82rem; color: var(--text); margin-bottom: 0.2rem; }
-  .wc-accolade { font-size: 0.72rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .wc-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; }
+  .wc-producer {
+    font-size: 0.82rem; color: var(--text); margin-bottom: 0.2rem;
+    overflow-wrap: anywhere; word-break: break-word;
+  }
+  .wc-accolade {
+    font-size: 0.72rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.2rem;
+    overflow-wrap: anywhere; word-break: break-word;
+  }
+  .wc-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; min-width: 0; }
+  .wc-meta span { overflow-wrap: anywhere; word-break: break-word; }
   .wc-detail {
     width: 100%; flex-basis: 100%;
     border-top: 1px solid var(--gold-border); padding-top: 0.75rem; margin-top: 0.5rem;
@@ -206,7 +219,7 @@
     padding: 1rem 1.25rem; background: var(--highlight);
     word-wrap: break-word; overflow-wrap: break-word;
     animation: detailSlideIn 0.25s ease-out;
-    max-width: calc(100vw - 2rem); box-sizing: border-box;
+    max-width: calc(100vw - 2rem); box-sizing: border-box; min-width: 0;
   }
   .detail-top { display: flex; gap: 1.25rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
   .detail-img {
@@ -214,8 +227,11 @@
     border: 1px solid var(--border); object-fit: cover; background: var(--surface);
     flex-shrink: 0;
   }
-  .detail-header { flex: 1; min-width: 200px; }
-  .detail-header h3 { font-size: 1.05rem; color: var(--accent); margin-bottom: 0.2rem; word-wrap: break-word; }
+  .detail-header { flex: 1; min-width: min(100%, 200px); }
+  .detail-header h3 {
+    font-size: 1.05rem; color: var(--accent); margin-bottom: 0.2rem;
+    overflow-wrap: anywhere; word-break: break-word;
+  }
   .detail-header a { color: var(--accent); text-decoration: none; font-size: 0.82rem; }
   .detail-header a:hover { text-decoration: underline; }
   .detail-accolade { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-top: 0.35rem; line-height: 1.5; }
@@ -223,12 +239,18 @@
     display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
     gap: 0.5rem 1.25rem; margin-bottom: 0.75rem; font-size: 0.84rem;
   }
-  .spec-item { display: flex; gap: 0.4rem; min-width: 0; }
+  .spec-item { display: flex; gap: 0.4rem; min-width: 0; align-items: flex-start; }
   .spec-label { font-weight: 600; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-  .spec-value { color: var(--text); width: 0; flex-grow: 1; overflow-wrap: break-word; }
+  .spec-value {
+    color: var(--text); width: 0; min-width: 0; flex-grow: 1;
+    overflow-wrap: anywhere; word-break: break-word;
+  }
   .notes-section { margin-bottom: 0.5rem; }
   .notes-section h3 { font-size: 0.85rem; color: var(--accent); margin-bottom: 0.25rem; }
-  .notes-section p { font-size: 0.84rem; color: var(--text); line-height: 1.5; white-space: pre-line; }
+  .notes-section p {
+    font-size: 0.84rem; color: var(--text); line-height: 1.5; white-space: pre-line;
+    overflow-wrap: anywhere; word-break: break-word;
+  }
 
   #loading { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 1.1rem; }
 
