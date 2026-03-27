@@ -79,4 +79,29 @@ ROASTERS: list[RoasterConfig] = [
         name="Little Waves Coffee",
         base_url="https://littlewaves.coffee",
     ),
+    RoasterConfig(
+        slug="archetype",
+        name="Archetype Coffee",
+        base_url="https://www.drinkarchetype.com",
+    ),
+    RoasterConfig(
+        slug="helm",
+        name="Helm Coffee Roasters",
+        base_url="https://helmcoffeeroasters.com",
+    ),
+    RoasterConfig(
+        slug="big-shoulders",
+        name="Big Shoulders Coffee",
+        base_url="https://www.bigshoulderscoffee.com",
+    ),
+    RoasterConfig(
+        slug="be-bright",
+        name="Be Bright Coffee",
+        base_url="https://www.bebrightcoffee.com",
+    ),
+    RoasterConfig(
+        slug="mostra",
+        name="Mostra Coffee",
+        base_url="https://www.mostracoffee.com",
+    ),
 ]

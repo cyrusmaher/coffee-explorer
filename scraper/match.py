@@ -1,7 +1,7 @@
-"""Producer watchlist matching — deterministic (Tier 1) + LLM fallback (Tier 2).
+"""Producer watchlist matching — LLM-based (Flash propose + Pro review).
 
 Loads data/producer_watchlist.csv and matches extracted product data against it.
-Tier 2 uses async concurrency (same pattern as extract.py).
+Uses async concurrency (same pattern as extract.py).
 """
 
 import asyncio
@@ -11,32 +11,20 @@ import json
 import logging
 import os
 import re
-import unicodedata
 from pathlib import Path
 
 from google import genai
-from pydantic import ValidationError
 
-from scraper.models import ExtractedCoffee, RoastedCoffeeProduct
+from scraper.models import RoastedCoffeeProduct
 
 log = logging.getLogger(__name__)
 
 WATCHLIST_FILE = Path(__file__).resolve().parent.parent / "data" / "producer_watchlist.csv"
 MATCH_CACHE_FILE = Path(__file__).resolve().parent.parent / "data" / "match_cache.json"
 
-# Gemini 3 Flash for Tier 2 proposal, Pro for review
+# Gemini 3 Flash for proposal, Pro for review
 MODEL_PROPOSE = "gemini-3-flash-preview"
 MODEL_REVIEW = "gemini-3.1-pro-preview"
-
-
-def _normalize(s: str) -> str:
-    """Lowercase, strip accents, collapse whitespace."""
-    if not s:
-        return ""
-    # Decompose unicode, strip combining marks (accents)
-    nfkd = unicodedata.normalize("NFKD", s)
-    without_accents = "".join(c for c in nfkd if not unicodedata.combining(c))
-    return re.sub(r"\s+", " ", without_accents.lower().strip())
 
 
 def load_watchlist() -> list[dict]:
@@ -47,72 +35,6 @@ def load_watchlist() -> list[dict]:
         rows = list(reader)
     log.info("Loaded %d producers from watchlist", len(rows))
     return rows
-
-
-
-# Words too common in coffee product text to use as standalone match terms
-_STOPWORDS = frozenset({
-    "coffee", "coffees", "cafe", "farm", "farms", "family", "estate", "estates",
-    "cooperative", "coop", "union", "project", "special", "reserve", "natural",
-    "washed", "honey", "roast", "roasted", "blend", "single", "origin",
-    "bourbon", "geisha", "gesha", "java", "nova", "halo", "goro",
-})
-
-
-def _build_match_terms(producer: dict) -> list[str]:
-    """Build a list of normalized search terms for a watchlist producer.
-
-    We want to match against product titles, producer_or_farm fields, etc.
-    Generates terms from both producer_name and farm_or_station.
-    Only uses full names — no single last-name extraction (too many false positives).
-    """
-    terms = []
-
-    # Producer full name only (no last-name splitting — "family", "savage", etc. are too generic)
-    name = producer.get("producer_name", "").strip()
-    if name:
-        terms.append(_normalize(name))
-
-    # Farm/station name — split on "/" for multi-farm entries
-    farm = producer.get("farm_or_station", "").strip()
-    if farm:
-        for part in farm.split("/"):
-            part = part.strip()
-            if part:
-                normalized = _normalize(part)
-                terms.append(normalized)
-                # Also try without "Finca" / "Hacienda" prefix
-                if normalized.startswith("finca "):
-                    terms.append(normalized[6:])
-                elif normalized.startswith("hacienda "):
-                    terms.append(normalized[9:])
-
-    # Filter: must be 5+ chars, not a stopword
-    terms = [t for t in terms if len(t) >= 5 and t not in _STOPWORDS]
-    return terms
-
-
-def _tier1_match(
-    product: RoastedCoffeeProduct,
-    watchlist: list[dict],
-    match_terms: dict[int, list[str]],
-) -> dict | None:
-    """Deterministic string matching. Returns matched watchlist row or None."""
-    # Build search corpus from product
-    search_text = _normalize(" ".join([
-        product.title or "",
-        product.producer_or_farm or "",
-        product.vendor or "",
-        " ".join(product.tags),
-    ]))
-
-    for i, producer in enumerate(watchlist):
-        for term in match_terms[i]:
-            if term in search_text:
-                # Avoid false positives from very common words
-                return producer
-
-    return None
 
 
 def _load_match_cache() -> dict:
@@ -145,12 +67,17 @@ def _parse_json_response(text: str) -> list | dict:
 
 
 def _find_watchlist_row(name: str, watchlist: list[dict]) -> dict | None:
-    """Find a watchlist row by producer name or farm name."""
-    norm = _normalize(name)
+    """Find a watchlist row by producer name or farm name (case-insensitive)."""
+    norm = name.strip().lower()
     for wp in watchlist:
-        if _normalize(wp.get("producer_name", "")) == norm:
+        if wp.get("producer_name", "").strip().lower() == norm:
             return wp
-        if _normalize(wp.get("farm_or_station", "")) == norm:
+        if wp.get("farm_or_station", "").strip().lower() == norm:
+            return wp
+    # Partial — check if name appears in farm field (handles "Finca X" vs "X")
+    for wp in watchlist:
+        farm = wp.get("farm_or_station", "").lower()
+        if norm and norm in farm:
             return wp
     return None
 
@@ -241,6 +168,9 @@ title or producer field explicitly names the producer, farm, or estate on the wa
 DO NOT match based on:
 - Shared country or region alone (e.g. "Ethiopia Bensa" does NOT mean "Daye Bensa")
 - Shared processing method or variety
+- Common place names that happen to match a farm name (e.g. "El Paraiso" is a \
+common name — a coffee from "El Paraiso, Honduras" is NOT from Diego Bermudez's \
+"Finca El Paraiso" in Colombia)
 - Vague associations or educated guesses
 
 WATCHLIST (producer | farm | country | tier):
@@ -386,41 +316,16 @@ async def match_products(
     products: list[RoastedCoffeeProduct],
     watchlist: list[dict],
 ) -> list[RoastedCoffeeProduct]:
-    """Apply Tier 1 (deterministic) + Tier 2 (LLM) matching to all products.
+    """Apply LLM-based matching (Flash propose + Pro review) to all products.
 
     Mutates and returns the products list with watchlist_match/tier fields set.
     """
-    match_terms = {i: _build_match_terms(p) for i, p in enumerate(watchlist)}
+    coffee_products = [p for p in products if p.is_coffee_product]
 
-    tier1_matched = 0
-    unmatched_products: list[RoastedCoffeeProduct] = []
-
-    def _apply_match(product: RoastedCoffeeProduct, matched: dict) -> None:
-        product.watchlist_match = matched.get("producer_name") or matched.get("farm_or_station", "")
-        product.watchlist_farm = matched.get("farm_or_station", "")
-        product.watchlist_tier = matched.get("tier", "")
-        product.watchlist_credential_type = matched.get("credential_type", "")
-        product.watchlist_credential_detail = matched.get("credential_detail", "")
-        product.watchlist_notes = matched.get("notes", "")
-        product.watchlist_url = matched.get("direct_sales_url", "")
-
-    for product in products:
-        if not product.is_coffee_product:
-            continue
-
-        matched = _tier1_match(product, watchlist, match_terms)
-        if matched:
-            _apply_match(product, matched)
-            tier1_matched += 1
-        else:
-            unmatched_products.append(product)
-
-    log.info("Tier 1 matching: %d/%d products matched", tier1_matched, len(products))
-
-    if unmatched_products:
-        tier2_results = await _tier2_batch_match(unmatched_products, watchlist)
-        for product in unmatched_products:
-            matched = tier2_results.get(product.product_url)
+    if coffee_products:
+        llm_results = await _tier2_batch_match(coffee_products, watchlist)
+        for product in coffee_products:
+            matched = llm_results.get(product.product_url)
             if matched:
                 _apply_match(product, matched)
 
@@ -428,3 +333,13 @@ async def match_products(
     log.info("Total watchlist matches: %d/%d products", total_matched, len(products))
 
     return products
+
+
+def _apply_match(product: RoastedCoffeeProduct, matched: dict) -> None:
+    product.watchlist_match = matched.get("producer_name") or matched.get("farm_or_station", "")
+    product.watchlist_farm = matched.get("farm_or_station", "")
+    product.watchlist_tier = matched.get("tier", "")
+    product.watchlist_credential_type = matched.get("credential_type", "")
+    product.watchlist_credential_detail = matched.get("credential_detail", "")
+    product.watchlist_notes = matched.get("notes", "")
+    product.watchlist_url = matched.get("direct_sales_url", "")

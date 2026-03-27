@@ -158,7 +158,26 @@
   .tier-badge {
     display: inline-block; font-size: 0.65rem; font-weight: 600;
     padding: 0.1rem 0.35rem; border-radius: 3px; white-space: nowrap;
+    position: relative; cursor: help;
   }
+  a.tier-badge { text-decoration: none; cursor: pointer; }
+  a.tier-badge:hover { filter: brightness(0.92); }
+  .tier-badge .tier-tip {
+    visibility: hidden; opacity: 0;
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%); z-index: 100;
+    background: var(--text); color: #fff; font-weight: 400; font-style: normal;
+    font-size: 0.7rem; line-height: 1.4; padding: 0.4rem 0.6rem;
+    border-radius: 5px; white-space: normal; width: max-content; max-width: 260px;
+    pointer-events: none; transition: opacity 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .tier-badge .tier-tip::after {
+    content: ""; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: var(--text);
+  }
+  .tier-badge:hover .tier-tip { visibility: visible; opacity: 1; }
   .tier-legend { background: #ffd700; color: #5a4700; }
   .tier-coe-legend { background: #e8c547; color: #5a4700; }
   .tier-wbc { background: #d4a574; color: #4a3520; }
@@ -636,6 +655,51 @@ document.getElementById("filter-country").addEventListener("change", applyFilter
 document.getElementById("filter-tier").addEventListener("change", applyFilters);
 
 /* ---------- Tier badge ---------- */
+const TIER_DESCRIPTIONS = {
+  "Legend": "ACE Legend of Excellence \u2014 highest lifetime achievement for a coffee producer, awarded by the Alliance for Coffee Excellence.",
+  "CoE Legend": "Cup of Excellence all-time great \u2014 repeat CoE winner with an exceptional multi-year track record.",
+  "WBC Elite": "Coffee used by World Coffee Championship finalists or winners (WBC, WBrC, or WCRC).",
+  "WBC/CoE": "Recognized by both World Coffee Championships and the Cup of Excellence program.",
+  "CoE Repeat": "Multiple Cup of Excellence wins \u2014 consistently top-scoring lots across competition years.",
+  "BoP Winner": "Best of Panama auction winner \u2014 Panama\u2019s premier quality competition for Gesha and other varieties.",
+  "CoE Winner": "Cup of Excellence award winner \u2014 top-scoring lot in a national CoE competition.",
+  "Yemen Elite": "Leading specialty coffee producer from Yemen, one of coffee\u2019s oldest origins.",
+  "Yemen Rising": "Emerging Yemeni specialty producer showing rapid quality improvement.",
+  "Ethiopia Elite": "Top Ethiopian specialty coffee producer \u2014 the birthplace of arabica coffee.",
+  "Ethiopia CoE": "Ethiopian Cup of Excellence winner.",
+  "Ethiopia Notable": "Notable Ethiopian specialty coffee origin with consistently high quality.",
+  "Tanzania Elite": "Leading Tanzanian specialty coffee producer.",
+  "Burundi Elite": "Leading Burundian specialty coffee producer.",
+  "Burundi CoE": "Burundian Cup of Excellence winner.",
+  "Rwanda CoE": "Rwandan Cup of Excellence winner.",
+  "Rwanda Notable": "Notable Rwandan specialty coffee producer.",
+  "Kenya Elite": "Leading Kenyan specialty coffee producer \u2014 known for bright SL-28/SL-34 profiles.",
+  "Kenya Notable": "Notable Kenyan specialty coffee origin.",
+  "Bolivia Elite": "Leading Bolivian specialty coffee producer \u2014 among the highest-altitude origins.",
+  "Indonesia Elite": "Leading Indonesian specialty coffee producer pioneering clean processing methods.",
+  "Indonesia CoE": "Indonesian Cup of Excellence winner.",
+  "Thailand CoE": "Thai Cup of Excellence winner.",
+  "Taiwan CoE": "Taiwanese Cup of Excellence winner.",
+};
+
+const TIER_LINKS = {
+  "Legend": "https://allianceforcoffeeexcellence.org/legends/",
+  "CoE Legend": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+  "WBC Elite": "https://wcc.coffee/",
+  "WBC/CoE": "https://wcc.coffee/",
+  "CoE Repeat": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+  "BoP Winner": "https://bestofpanama.org/",
+  "CoE Winner": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+  "Yemen Elite": "https://www.bestofyemen.coffee/",
+  "Yemen Rising": "https://www.bestofyemen.coffee/",
+  "Ethiopia CoE": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+  "Burundi CoE": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+  "Rwanda CoE": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+  "Indonesia CoE": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+  "Thailand CoE": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+  "Taiwan CoE": "https://allianceforcoffeeexcellence.org/cup-of-excellence/",
+};
+
 function tierBadgeClass(tier) {
   if (!tier) return "";
   const t = tier.toLowerCase();
@@ -649,7 +713,14 @@ function tierBadgeClass(tier) {
 
 function tierBadgeHTML(tier) {
   if (!tier) return "";
-  return `<span class="tier-badge ${tierBadgeClass(tier)}">${esc(tier)}</span>`;
+  const cls = tierBadgeClass(tier);
+  const desc = TIER_DESCRIPTIONS[tier] || "";
+  const tip = desc ? `<span class="tier-tip">${esc(desc)}</span>` : "";
+  const link = TIER_LINKS[tier];
+  if (link) {
+    return `<a class="tier-badge ${cls}" href="${esc(link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(tier)}${tip}</a>`;
+  }
+  return `<span class="tier-badge ${cls}">${esc(tier)}${tip}</span>`;
 }
 
 /* ---------- Watchlist section ---------- */
@@ -861,7 +932,14 @@ function buildDetailHTML(c) {
 
   let accolade = "";
   if (c.watchlist_credential_type || c.watchlist_credential_detail) {
-    if (c.watchlist_credential_type) accolade += `<strong>${esc(c.watchlist_credential_type)}</strong>: `;
+    if (c.watchlist_credential_type) {
+      const credLink = TIER_LINKS[c.watchlist_tier];
+      if (credLink) {
+        accolade += `<a href="${esc(credLink)}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px">${esc(c.watchlist_credential_type)}</a>: `;
+      } else {
+        accolade += `<strong>${esc(c.watchlist_credential_type)}</strong>: `;
+      }
+    }
     if (c.watchlist_credential_detail) accolade += esc(c.watchlist_credential_detail);
   }
   if (c.watchlist_notes) {
