@@ -4,5 +4,3 @@ __pycache__/
 .env
 *.png
 *.jpg
-data/llm_cache.json
-data/match_cache.json
