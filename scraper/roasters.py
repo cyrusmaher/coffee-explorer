@@ -104,4 +104,10 @@ ROASTERS: list[RoasterConfig] = [
         name="Mostra Coffee",
         base_url="https://www.mostracoffee.com",
     ),
+    RoasterConfig(
+        slug="wonderstate",
+        name="Wonderstate Coffee",
+        base_url="https://wonderstate.com",
+        collection="single-origin",
+    ),
 ]

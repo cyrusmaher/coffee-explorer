@@ -10,6 +10,7 @@ class RoasterConfig(BaseModel):
     base_url: str  # e.g. "https://onyxcoffeelab.com"
     price_divisor: float = 1.0  # divide API prices by this to get USD (e.g. 10.5 for SEK)
     currency: str = "USD"  # ISO 4217 code
+    collection: str | None = None  # optional collection handle, e.g. "single-origin"
 
 
 class ExtractedCoffee(BaseModel):

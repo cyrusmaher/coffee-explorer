@@ -128,7 +128,10 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
     page = 1
 
     while True:
-        url = f"{roaster.base_url}/products.json"
+        if roaster.collection:
+            url = f"{roaster.base_url}/collections/{roaster.collection}/products.json"
+        else:
+            url = f"{roaster.base_url}/products.json"
         params = {"limit": PAGE_LIMIT, "page": page}
 
         log.info(
