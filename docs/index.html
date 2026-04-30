@@ -40,7 +40,10 @@
     gap: 1rem;
   }
 
-  header h1 { font-size: 1.4rem; font-weight: 600; white-space: nowrap; }
+  header h1 {
+    font-size: 1.4rem; font-weight: 600; white-space: nowrap;
+    align-self: flex-end; margin-bottom: calc(0.35rem + 1px);
+  }
 
   .nav-tabs {
     display: flex; align-items: flex-end; gap: 0.4rem; flex-wrap: wrap;
@@ -64,6 +67,7 @@
     border-radius: 4px;
     white-space: nowrap;
   }
+  .nav-tabs > .nav-link { margin-bottom: calc(0.35rem + 1px); }
   .nav-link:hover { background: rgba(255,255,255,0.15); color: #fff; }
   .nav-link.active {
     background: rgba(255,255,255,0.25); color: #fff;
@@ -74,6 +78,7 @@
     flex: 1; min-width: 200px; max-width: 400px;
     padding: 0.5rem 0.75rem; border: none; border-radius: 6px;
     font-size: 0.95rem; background: rgba(255,255,255,0.9); color: var(--text);
+    align-self: flex-end; margin-bottom: calc(0.35rem + 1px);
   }
   #search::placeholder { color: var(--text-muted); }
 
@@ -512,7 +517,7 @@ function linkProducer(name, url) {
 let allProducts = [];
 let filtered = [];
 let searchIndex = null;  // Lunr index
-let sortCol = "roaster_name";
+let sortCol = "random";
 let sortDir = 1;
 let selectedIdx = -1;
 
@@ -545,6 +550,7 @@ fetch("roasted-data.json")
         return {
           ...p,
           _idx: i,
+          _random: Math.random(),
           variety_str: (p.variety || []).map(v => v === "Geisha" ? "Gesha" : v).join(", "),
           tasting_str: (p.tasting_notes || []).join(", "),
           price_num,
@@ -741,15 +747,12 @@ function renderWatchlist() {
   section.style.display = "block";
   count.textContent = `(${watchlistProducts.length} products)`;
 
-  // Sort: available first, then by tier, then by name
+  // Sort: available first, then random
   watchlistProducts.sort((a, b) => {
     const aa = a.is_available === false ? 1 : 0;
     const ab = b.is_available === false ? 1 : 0;
     if (aa !== ab) return aa - ab;
-    const ta = TIER_ORDER[a.watchlist_tier] ?? 99;
-    const tb = TIER_ORDER[b.watchlist_tier] ?? 99;
-    if (ta !== tb) return ta - tb;
-    return a.title.localeCompare(b.title);
+    return a._random - b._random;
   });
 
   grid.innerHTML = watchlistProducts.map(p => {
@@ -809,6 +812,7 @@ function buildTableHead() {
 }
 
 function sortVal(c, key) {
+  if (key === "random") return c._random;
   if (key === "price") return c.price_num || 0;
   if (key === "price_per_oz") return c.price_per_oz || 0;
   if (key === "sample") return c.sample_price_num || 0;
