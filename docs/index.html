@@ -200,6 +200,17 @@
   }
   .wc-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; min-width: 0; }
   .wc-meta span { overflow-wrap: anywhere; word-break: break-word; }
+  .wc-notes {
+    display: flex; flex-wrap: wrap; gap: 0.25rem;
+    margin: 0.3rem 0;
+  }
+  .wc-note-chip {
+    font-size: 0.7rem; color: var(--accent);
+    background: rgba(139, 94, 60, 0.08);
+    border: 1px solid rgba(139, 94, 60, 0.2);
+    border-radius: 10px; padding: 0.05rem 0.45rem;
+    overflow-wrap: anywhere; word-break: break-word;
+  }
   .wc-detail {
     width: 100%; flex-basis: 100%;
     border-top: 1px solid var(--gold-border); padding-top: 0.75rem; margin-top: 0.5rem;
@@ -768,6 +779,7 @@ function renderWatchlist() {
     const priceStr = priceWithSize(p.price_num, p.weight_label);
     const perOz = p.price_per_oz_str;
     const accolade = p.watchlist_credential_detail || "";
+    const topNotes = (p.tasting_notes || []).slice(0, 3);
     const unavailClass = p.is_available === false ? " unavailable" : "";
     const soldOutBadge = p.is_available === false ? '<span class="sold-out-badge">Sold Out</span>' : "";
     const imgTag = p.image_url
@@ -793,6 +805,7 @@ function renderWatchlist() {
           <div class="wc-producer">${esc(producer)}</div>
           ${accolade ? `<div class="wc-accolade">${esc(accolade)}</div>` : ""}
           <div class="wc-meta">${meta.map(m => `<span>${esc(m)}</span>`).join("")}</div>
+          ${topNotes.length ? `<div class="wc-notes">${topNotes.map(n => `<span class="wc-note-chip">${esc(n)}</span>`).join("")}</div>` : ""}
         </div>
       </div>`;
   }).join("");
