@@ -140,6 +140,12 @@
     object-fit: cover; border: 1px solid var(--gold-border);
     flex-shrink: 0; background: var(--highlight);
   }
+  .img-placeholder {
+    display: inline-block;
+    background:
+      linear-gradient(135deg, rgba(139, 94, 60, 0.08), rgba(196, 154, 108, 0.18)),
+      var(--highlight);
+  }
 
   .wc-body { flex: 1; min-width: 0; }
 
@@ -555,6 +561,30 @@ function priceWithSize(priceNum, weightLabel) {
   return weightLabel ? `${p} / ${weightLabel}` : p;
 }
 
+function handleImageError(img) {
+  const ph = document.createElement("div");
+  ph.className = `${img.className} img-placeholder`;
+  ph.setAttribute("aria-hidden", "true");
+  img.replaceWith(ph);
+}
+
+function countryList(value) {
+  if (!value) return [];
+  const aliases = { "PNG": "Papua New Guinea", "Sumatra": "Indonesia" };
+  const nonCountries = new Set([
+    "Central", "Central America", "East Africa", "Latin America",
+    "South America", "Various", "Multiple Origins",
+  ]);
+  return value
+    .split(/[,;&]|\band\b/i)
+    .map(v => aliases[v.trim()] || v.trim())
+    .filter(v => v && !nonCountries.has(v));
+}
+
+function productCountries(product) {
+  return countryList(product.origin_country);
+}
+
 /* ---------- Data loading ---------- */
 fetch("roasted-data.json")
   .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
@@ -581,21 +611,23 @@ fetch("roasted-data.json")
         };
       });
 
-    // Build Lunr search index
-    searchIndex = lunr(function() {
-      this.field('title', { boost: 3 });
-      this.field('producer_or_farm', { boost: 2 });
-      this.field('origin_country');
-      this.field('variety_str');
-      this.field('process');
-      this.field('tasting_str');
-      this.field('roaster_name');
-      this.field('origin_region');
-      this.field('watchlist_match');
-      this.field('watchlist_credential_detail');
-      this.ref('_idx');
-      allProducts.forEach(p => { this.add(p); });
-    });
+    // Build Lunr search index when the CDN script is available.
+    if (typeof lunr === "function") {
+      searchIndex = lunr(function() {
+        this.field('title', { boost: 3 });
+        this.field('producer_or_farm', { boost: 2 });
+        this.field('origin_country');
+        this.field('variety_str');
+        this.field('process');
+        this.field('tasting_str');
+        this.field('roaster_name');
+        this.field('origin_region');
+        this.field('watchlist_match');
+        this.field('watchlist_credential_detail');
+        this.ref('_idx');
+        allProducts.forEach(p => { this.add(p); });
+      });
+    }
 
     filtered = [...allProducts];
     document.getElementById("loading").style.display = "none";
@@ -616,7 +648,7 @@ fetch("roasted-data.json")
 /* ---------- Filters ---------- */
 function buildFilters() {
   const roasters = [...new Set(allProducts.map(p => p.roaster_name))].sort();
-  const countries = [...new Set(allProducts.map(p => p.origin_country).filter(Boolean))].sort();
+  const countries = [...new Set(allProducts.flatMap(productCountries))].sort();
   const tiers = [...new Set(allProducts.map(p => p.watchlist_tier).filter(Boolean))].sort(
     (a, b) => (TIER_ORDER[a] ?? 99) - (TIER_ORDER[b] ?? 99)
   );
@@ -663,6 +695,16 @@ function applyFilters() {
         return corpus.includes(ql);
       });
     }
+  } else if (q) {
+    const ql = q.toLowerCase();
+    pool = allProducts.filter(p => {
+      const corpus = [
+        p.title, p.roaster_name, p.producer_or_farm, p.origin_country,
+        p.origin_region, p.process, p.variety_str, p.tasting_str,
+        p.watchlist_match, p.watchlist_tier, p.watchlist_credential_detail,
+      ].filter(Boolean).join(" ").toLowerCase();
+      return corpus.includes(ql);
+    });
   } else {
     pool = allProducts;
   }
@@ -670,7 +712,7 @@ function applyFilters() {
   // Apply dropdown filters
   filtered = pool.filter(p => {
     if (roaster && p.roaster_name !== roaster) return false;
-    if (country && p.origin_country !== country) return false;
+    if (country && !productCountries(p).includes(country)) return false;
     if (tier && p.watchlist_tier !== tier) return false;
     return true;
   });
@@ -783,7 +825,7 @@ function renderWatchlist() {
     const unavailClass = p.is_available === false ? " unavailable" : "";
     const soldOutBadge = p.is_available === false ? '<span class="sold-out-badge">Sold Out</span>' : "";
     const imgTag = p.image_url
-      ? `<img class="wc-img" src="${esc(p.image_url)}" alt="" loading="lazy">`
+      ? `<img class="wc-img" src="${esc(p.image_url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="handleImageError(this)">`
       : `<div class="wc-img"></div>`;
 
     return `
@@ -875,6 +917,8 @@ function renderTable() {
       if (col.img && c.image_url) {
         const img = document.createElement("img");
         img.className = "tbl-img"; img.src = c.image_url; img.alt = ""; img.loading = "lazy";
+        img.referrerPolicy = "no-referrer";
+        img.addEventListener("error", () => handleImageError(img), { once: true });
         td.appendChild(img);
         const nameText = c[col.key] || "";
         td.appendChild(document.createTextNode(nameText));
@@ -1007,7 +1051,7 @@ function buildDetailHTML(c) {
     : "";
 
   const imgHtml = c.image_url
-    ? `<img class="detail-img" src="${esc(c.image_url)}" alt="" loading="lazy">`
+    ? `<img class="detail-img" src="${esc(c.image_url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="handleImageError(this)">`
     : "";
 
   return `<div class="detail-inner">
