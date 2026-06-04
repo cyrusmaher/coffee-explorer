@@ -36,6 +36,10 @@ CONCURRENCY = 30
 # Save cache every N new LLM calls
 CACHE_SAVE_INTERVAL = 20
 
+
+class ExtractionParseError(ValueError):
+    """Raised when an LLM response cannot be parsed as extraction JSON."""
+
 EXTRACTION_PROMPT = """\
 You are a specialty coffee data extractor. Given a coffee product title and description \
 from a roaster's website, extract structured information.
@@ -133,7 +137,7 @@ def _parse_llm_response(text: str) -> ExtractedCoffee:
         return ExtractedCoffee(**data)
     except (json.JSONDecodeError, ValidationError) as e:
         log.warning("Failed to parse LLM response: %s\nResponse: %s", e, text[:200])
-        return ExtractedCoffee(is_coffee_product=True)
+        raise ExtractionParseError(str(e)) from e
 
 
 async def extract_products(
@@ -218,6 +222,10 @@ async def extract_products(
                     )
 
                 return product.id, extracted, None
+            except ExtractionParseError as e:
+                completed += 1
+                fallback = ExtractedCoffee(is_coffee_product=True)
+                return product.id, fallback, str(e)
             except Exception as e:
                 completed += 1
                 return product.id, None, str(e)
@@ -235,7 +243,7 @@ async def extract_products(
             llm_calls += 1
         else:
             failed_jobs[str(product_id)] = err
-            results[product_id] = ExtractedCoffee(is_coffee_product=True)
+            results[product_id] = extracted or ExtractedCoffee(is_coffee_product=True)
             llm_calls += 1
 
     # Final cache save

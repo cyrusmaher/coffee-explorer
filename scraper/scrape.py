@@ -21,6 +21,7 @@ load_dotenv()
 from scraper.extract import extract_products
 from scraper.match import load_watchlist, match_products
 from scraper.models import RoastedCoffeeProduct
+from scraper.product_filter import should_publish_product
 from scraper.roasters import ROASTERS
 from scraper.shopify import fetch_products
 
@@ -57,7 +58,7 @@ async def run() -> None:
         # Step 3: Assemble RoastedCoffeeProduct records
         for product in raw_products:
             extracted = extractions.get(product.id)
-            if extracted and not extracted.is_coffee_product:
+            if not should_publish_product(product, extracted):
                 continue
 
             # Skip archived products (sold out + $0 price = dead listing)

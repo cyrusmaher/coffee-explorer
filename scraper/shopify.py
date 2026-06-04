@@ -196,6 +196,8 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
             # Extract first image URL
             images = p.get("images", [])
             image_url = images[0].get("src", "") if images else ""
+            if not image_url and p.get("image"):
+                image_url = p["image"].get("src", "")
 
             product = ShopifyProduct(
                 id=p["id"],
