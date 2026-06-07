@@ -2418,5 +2418,55 @@
     "elevation": null,
     "tasting_notes": [],
     "is_coffee_product": false
+  },
+  "430431cdcb77974f": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "8966790d2d0751b8": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "2c2994c3f14f8002": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "43948501d0e828da": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "67e183e7f47858f8": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
   }
 }
