@@ -22,6 +22,7 @@ from scraper.extract import extract_products
 from scraper.match import load_watchlist, match_products
 from scraper.models import RoastedCoffeeProduct
 from scraper.product_filter import should_publish_product
+from scraper.quality import validate_output_quality
 from scraper.roasters import ROASTERS
 from scraper.shopify import fetch_products
 
@@ -102,6 +103,7 @@ async def run() -> None:
 
     # Step 4: Watchlist matching (async for Tier 2 LLM)
     all_products = await match_products(all_products, watchlist)
+    validate_output_quality(all_products)
 
     # Step 5: Write output
     DOCS_DIR.mkdir(parents=True, exist_ok=True)

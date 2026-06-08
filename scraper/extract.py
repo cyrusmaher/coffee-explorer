@@ -40,6 +40,15 @@ CACHE_SAVE_INTERVAL = 20
 class ExtractionParseError(ValueError):
     """Raised when an LLM response cannot be parsed as extraction JSON."""
 
+
+def _too_many_failures(failed_count: int, work_count: int) -> bool:
+    """Return True when extraction failures are too risky to publish."""
+    if failed_count <= 0 or work_count <= 0:
+        return False
+    failure_limit = max(1, (work_count + 9) // 10)
+    return failed_count > failure_limit or failed_count == work_count
+
+
 EXTRACTION_PROMPT = """\
 You are a specialty coffee data extractor. Given a coffee product title and description \
 from a roaster's website, extract structured information.
@@ -224,11 +233,16 @@ async def extract_products(
                 return product.id, extracted, None
             except ExtractionParseError as e:
                 completed += 1
-                fallback = ExtractedCoffee(is_coffee_product=True)
+                with cache_lock:
+                    cache.pop(cache_key, None)
+                fallback = ExtractedCoffee(is_coffee_product=False)
                 return product.id, fallback, str(e)
             except Exception as e:
                 completed += 1
-                return product.id, None, str(e)
+                with cache_lock:
+                    cache.pop(cache_key, None)
+                fallback = ExtractedCoffee(is_coffee_product=False)
+                return product.id, fallback, str(e)
 
     # Create all tasks and run concurrently
     tasks = [
@@ -243,7 +257,7 @@ async def extract_products(
             llm_calls += 1
         else:
             failed_jobs[str(product_id)] = err
-            results[product_id] = extracted or ExtractedCoffee(is_coffee_product=True)
+            results[product_id] = extracted or ExtractedCoffee(is_coffee_product=False)
             llm_calls += 1
 
     # Final cache save
@@ -255,6 +269,11 @@ async def extract_products(
             roaster_slug, len(failed_jobs),
             list(failed_jobs.values())[:3],
         )
+        if _too_many_failures(len(failed_jobs), len(work_items)):
+            raise RuntimeError(
+                f"[{roaster_slug}] refusing to continue after "
+                f"{len(failed_jobs)}/{len(work_items)} extraction failures"
+            )
 
     log.info(
         "[%s] Extraction complete: %d products, %d LLM calls, %d cache hits, %d failures",
