@@ -1,8 +1,8 @@
 """LLM-based extraction of structured coffee data from Shopify body_html.
 
-Uses Gemini 3 Flash via the google-genai SDK (Vertex AI backend with global
-endpoint). Caches results keyed by sha256(body_html)[:16] so unchanged
-descriptions skip the LLM call.
+Uses NVIDIA-hosted inference through the shared async LLM client. Results are
+cached by a hash of the product title and stripped description so unchanged
+products skip the LLM call.
 
 Parallelism follows the pattern from ds_utils.py: asyncio.Semaphore +
 asyncio.create_task + asyncio.as_completed with tqdm progress.
@@ -12,13 +12,12 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 import re
 import threading
 from pathlib import Path
 
 from bs4 import BeautifulSoup
-from google import genai
+from scraper.llm import NvidiaClient
 from pydantic import ValidationError
 
 from scraper.models import ExtractedCoffee, ShopifyProduct
@@ -27,11 +26,8 @@ log = logging.getLogger(__name__)
 
 CACHE_FILE = Path(__file__).resolve().parent.parent / "data" / "llm_cache.json"
 
-# Gemini 3 Flash — fast, cheap, structured output
-MODEL = "gemini-3-flash-preview"
-
-# Concurrency: Gemini Flash can handle high parallelism
-CONCURRENCY = 30
+# The shared client limits concurrency and request rate across all LLM stages.
+CONCURRENCY = 4
 
 # Save cache every N new LLM calls
 CACHE_SAVE_INTERVAL = 20
@@ -113,26 +109,6 @@ def _save_cache(cache: dict) -> None:
     )
 
 
-def _init_client() -> genai.Client:
-    """Initialize Gemini client via Vertex AI (global endpoint) or API key fallback."""
-    project = os.environ.get("GOOGLE_CLOUD_PROJECT")
-    location = os.environ.get("VERTEX_AI_LOCATION", "global")
-
-    if project:
-        log.info("Using Vertex AI: project=%s, location=%s", project, location)
-        return genai.Client(vertexai=True, project=project, location=location)
-
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if api_key:
-        log.info("Using Gemini API key (direct)")
-        return genai.Client(api_key=api_key)
-
-    raise RuntimeError(
-        "Set GOOGLE_CLOUD_PROJECT + VERTEX_AI_LOCATION=global for Vertex AI, "
-        "or GEMINI_API_KEY for direct API access."
-    )
-
-
 def _parse_llm_response(text: str) -> ExtractedCoffee:
     """Parse LLM JSON response into ExtractedCoffee, handling markdown fences."""
     cleaned = text.strip()
@@ -153,13 +129,13 @@ async def extract_products(
     products: list[ShopifyProduct],
     roaster_slug: str,
 ) -> dict[int, ExtractedCoffee]:
-    """Extract structured data from products using Gemini Flash with async concurrency.
+    """Extract structured data from products using NVIDIA with async concurrency.
 
     Uses asyncio.Semaphore to limit concurrent LLM calls (ds_utils pattern).
     Returns a dict mapping product ID -> ExtractedCoffee.
     """
     cache = _load_cache()
-    client = _init_client()
+    client = NvidiaClient()
     results: dict[int, ExtractedCoffee] = {}
     cache_hits = 0
     llm_calls = 0
@@ -212,11 +188,8 @@ async def extract_products(
         nonlocal completed
         async with sem:
             try:
-                response = await client.aio.models.generate_content(
-                    model=MODEL,
-                    contents=prompt,
-                )
-                extracted = _parse_llm_response(response.text)
+                response = await client.generate(prompt)
+                extracted = _parse_llm_response(response)
 
                 with cache_lock:
                     cache[cache_key] = extracted.model_dump()

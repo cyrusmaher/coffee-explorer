@@ -2,7 +2,7 @@
 
 Steps:
   1. Fetch products from all Shopify roasters (sync, fast)
-  2. Extract structured data via Gemini LLM (async, parallel)
+  2. Extract structured data via NVIDIA LLM (async, parallel)
   3. Match against producer watchlist
   4. Write docs/roasted-data.json for the frontend
   5. (Separate step) Run `python -m scraper.liveness` to remove locked pages

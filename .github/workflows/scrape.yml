@@ -9,13 +9,17 @@ permissions:
   contents: write
 
 env:
-  GOOGLE_CLOUD_PROJECT: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
-  VERTEX_AI_LOCATION: global
-  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}  # fallback if not using Vertex AI
+  NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+  NVIDIA_MODEL: nvidia/nemotron-3.5-lightning-30b-a3b
+
+concurrency:
+  group: roasted-coffee-scrape
+  cancel-in-progress: false
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
