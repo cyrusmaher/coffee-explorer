@@ -18,10 +18,19 @@ watchlist matching. It does not require Gemini or Google Cloud credentials.
 - Trigger **Scrape Roasted Coffee** with **Run workflow** for a manual refresh.
 
 Requests are paced at 30 per minute with at most four in flight, with bounded
-retries for throttling and transient failures. Actual access and quotas depend on
+retries for throttling and transient failures. HTTP 429 pauses the entire request
+queue for at least a minute; persistent throttling stops further calls until a
+later run. Listings excluded by the publishing rules skip inference entirely.
+Actual access and quotas depend on
 the NVIDIA account; the scraper does not purchase credits or use a paid fallback.
 Existing extraction and matching caches are reused. New responses are validated;
 failed reviews are not cached as rejected matches. A failed extraction/matching
 stage or output quality check leaves the published JSON unchanged.
+
+Actions checks NVIDIA availability before scraping. Successful inference is
+saved to an Actions cache even when the scraper fails, and failed runs also
+upload their cache files as a seven-day artifact. Re-running the workflow on the
+same branch resumes this progress. A change to the committed cache files starts
+a new cache lineage so restored files cannot overwrite committed corrections.
 
 Run checks with `python -m pytest tests` (install `pytest` separately).

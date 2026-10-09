@@ -23,6 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Restore completed inference
+        id: inference-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            data/llm_cache.json
+            data/match_cache.json
+          key: ${{ runner.os }}-coffee-v1-${{ github.ref_name }}-${{ hashFiles('data/llm_cache.json', 'data/match_cache.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ${{ runner.os }}-coffee-v1-${{ github.ref_name }}-${{ hashFiles('data/llm_cache.json', 'data/match_cache.json') }}-
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -30,8 +41,37 @@ jobs:
       - name: Install dependencies
         run: pip install -r scraper/requirements.txt
 
+      - name: Check NVIDIA availability
+        run: |
+          python - <<'PY'
+          import asyncio
+          from scraper.llm import NvidiaClient
+          asyncio.run(NvidiaClient().generate("Reply with just OK."))
+          print("NVIDIA inference is available")
+          PY
+
       - name: Run scraper
+        id: scrape
         run: python -m scraper.scrape
+
+      - name: Save completed inference even if scraping fails
+        if: ${{ always() && (steps.scrape.outcome == 'success' || steps.scrape.outcome == 'failure') }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            data/llm_cache.json
+            data/match_cache.json
+          key: ${{ steps.inference-cache.outputs.cache-primary-key }}
+
+      - name: Preserve failed-run progress for inspection
+        if: ${{ failure() && steps.scrape.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: inference-progress-${{ github.run_attempt }}
+          path: |
+            data/llm_cache.json
+            data/match_cache.json
+          retention-days: 7
 
       - name: Auto-commit if data changed
         run: |
