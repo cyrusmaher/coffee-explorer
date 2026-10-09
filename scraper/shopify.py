@@ -28,7 +28,8 @@ HEADERS = {
 # ---------- Variant selection ----------
 
 _WEIGHT_RE = re.compile(
-    r"(\d+(?:\.\d+)?)\s*(oz|grams?|gr|lbs?|kg)s?\b", re.IGNORECASE,
+    r"(?<![\d.,])(\d+(?:,\d{3})*(?:\.\d+)?)\s*(oz|grams?|gr|g|lbs?|kg)s?\b",
+    re.IGNORECASE,
 )
 
 
@@ -44,7 +45,7 @@ def _parse_variant_grams(variant: dict) -> int:
     if not m:
         return 0
 
-    val = float(m.group(1))
+    val = float(m.group(1).replace(",", ""))
     unit = m.group(2).lower().rstrip("s")  # normalize plurals
     if unit in ("g", "gr", "gram"):
         return int(val)
