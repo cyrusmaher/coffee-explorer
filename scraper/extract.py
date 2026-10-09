@@ -119,7 +119,13 @@ def _parse_llm_response(text: str) -> ExtractedCoffee:
 
     try:
         data = json.loads(cleaned)
-        return ExtractedCoffee(**data)
+        if isinstance(data, dict):
+            # Models may use null for an absent array despite the prompt. Keep
+            # unknown values empty without accepting strings or other shapes.
+            for field in ("variety", "tasting_notes"):
+                if data.get(field) is None:
+                    data[field] = []
+        return ExtractedCoffee.model_validate(data)
     except (json.JSONDecodeError, ValidationError) as e:
         log.warning("Failed to parse LLM response: %s\nResponse: %s", e, text[:200])
         raise ExtractionParseError(str(e)) from e
