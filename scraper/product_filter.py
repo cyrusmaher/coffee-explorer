@@ -211,6 +211,15 @@ def _tags(product: Any) -> list[str]:
     return [str(t).strip().lower() for t in raw if str(t).strip()]
 
 
+def is_excluded_product(product: Any) -> bool:
+    """Identify listings that cannot be published, regardless of extraction."""
+    return _has_rejected_metadata(
+        str(_field(product, "vendor") or ""),
+        str(_field(product, "product_type") or ""),
+        _tags(product),
+    ) or bool(_REJECT_TITLE_RE.search(str(_field(product, "title") or "")))
+
+
 def should_publish_product(product: Any, extracted: Any | None = None) -> bool:
     """Return True when a product should appear in the public explorer.
 
@@ -221,14 +230,10 @@ def should_publish_product(product: Any, extracted: Any | None = None) -> bool:
     if extracted is not None and not _field(extracted, "is_coffee_product", False):
         return False
 
-    title = str(_field(product, "title") or "")
-    vendor = str(_field(product, "vendor") or "")
     product_type = str(_field(product, "product_type") or "")
     tags = _tags(product)
 
-    if _has_rejected_metadata(vendor, product_type, tags):
-        return False
-    if _REJECT_TITLE_RE.search(title):
+    if is_excluded_product(product):
         return False
 
     return _has_coffee_metadata(product_type, tags, product) or bool(

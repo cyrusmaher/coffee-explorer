@@ -66,7 +66,7 @@ def test_null_arrays_are_cached_as_lists_without_extraction_failure(monkeypatch,
         "is_coffee_product": False,
     }))
     monkeypatch.setattr(extract, "NvidiaClient", lambda: client)
-    product = ShopifyProduct(id=1, title="Mug", handle="mug", body_html="A ceramic mug")
+    product = ShopifyProduct(id=1, title="Mystery item", handle="item", body_html="A ceramic vessel")
 
     result = asyncio.run(extract.extract_products([product], "test"))
     cached = next(iter(json.loads(cache_file.read_text()).values()))
@@ -75,3 +75,24 @@ def test_null_arrays_are_cached_as_lists_without_extraction_failure(monkeypatch,
     assert cached["variety"] == []
     assert cached["tasting_notes"] == []
     assert cached["is_coffee_product"] is False
+
+
+def test_excluded_products_skip_inference_without_poisoning_text_cache(monkeypatch, tmp_path):
+    cache_file = tmp_path / "llm_cache.json"
+    monkeypatch.setattr(extract, "CACHE_FILE", cache_file)
+    client = Mock()
+    client.generate = AsyncMock(return_value='{"is_coffee_product": true}')
+    monkeypatch.setattr(extract, "NvidiaClient", lambda: client)
+    product = ShopifyProduct(id=1, title="Colombia Lot", handle="lot",
+                             body_html="A bag of coffee", tags=["internal"])
+
+    result = asyncio.run(extract.extract_products([product], "test"))
+    assert result[1].is_coffee_product is False
+    client.generate.assert_not_awaited()
+    assert json.loads(cache_file.read_text()) == {}
+
+    # A metadata change must allow extraction even when title/description match.
+    product.tags = []
+    result = asyncio.run(extract.extract_products([product], "test"))
+    assert result[1].is_coffee_product is True
+    client.generate.assert_awaited_once()

@@ -21,6 +21,7 @@ from scraper.llm import NvidiaClient
 from pydantic import ValidationError
 
 from scraper.models import ExtractedCoffee, ShopifyProduct
+from scraper.product_filter import is_excluded_product
 
 log = logging.getLogger(__name__)
 
@@ -152,6 +153,11 @@ async def extract_products(
     work_items: list[tuple[ShopifyProduct, str, str]] = []  # (product, cache_key, prompt)
 
     for product in products:
+        if is_excluded_product(product):
+            # These listings would be rejected even with a positive extraction.
+            # Do not cache a metadata-based exclusion under a text-only key.
+            results[product.id] = ExtractedCoffee(is_coffee_product=False)
+            continue
         description_text = _strip_html(product.body_html)
         cache_key = _content_hash(f"{product.title}|{description_text}")
 
