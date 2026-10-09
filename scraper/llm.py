@@ -1,6 +1,7 @@
 """NVIDIA chat-completions transport shared by extraction and watchlist matching."""
 
 import asyncio
+import logging
 import os
 import time
 from email.utils import parsedate_to_datetime
@@ -10,6 +11,11 @@ import requests
 ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions"
 DEFAULT_MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b"
 RETRYABLE = {408, 429, 500, 502, 503, 504, 529}
+log = logging.getLogger(__name__)
+
+
+class NvidiaRateLimitError(RuntimeError):
+    """The provider is still throttling; preserve progress for a later run."""
 
 
 class NvidiaClient:
@@ -23,10 +29,16 @@ class NvidiaClient:
         self._slots = asyncio.Semaphore(4)
         self._pace = asyncio.Lock()
         self._next_request = 0.0
+        self._cooldown_until = 0.0
+        self._rate_limit_exhausted = False
 
     async def _wait_for_slot(self):
         async with self._pace:
-            await asyncio.sleep(max(0, self._next_request - time.monotonic()))
+            while True:
+                delay = max(self._next_request, self._cooldown_until) - time.monotonic()
+                if delay <= 0:
+                    break
+                await asyncio.sleep(delay)
             # Conservative default for the hosted API: at most 30 requests/minute.
             self._next_request = time.monotonic() + 2.0
 
@@ -59,7 +71,7 @@ class NvidiaClient:
                     delay = parsedate_to_datetime(retry_after).timestamp() - time.time()
                 except (ValueError, TypeError, OverflowError):
                     delay = 0
-            delay = max(0, min(delay, 120))
+            delay = max(0, delay)
             if response.status_code != 200:
                 return response.status_code, None, delay
             try:
@@ -74,12 +86,26 @@ class NvidiaClient:
     async def generate(self, prompt: str) -> str:
         async with self._slots:
             for attempt in range(4):
+                if self._rate_limit_exhausted:
+                    raise NvidiaRateLimitError("NVIDIA remains rate limited; retry in a later run")
                 await self._wait_for_slot()
+                if self._rate_limit_exhausted:
+                    raise NvidiaRateLimitError("NVIDIA remains rate limited; retry in a later run")
                 status, content, retry_after = await asyncio.to_thread(self._request, prompt)
                 if status == 200:
                     return content
                 if status is not None and status not in RETRYABLE:
                     raise RuntimeError(f"NVIDIA request failed (HTTP {status}); check credentials and model")
+                if status == 429:
+                    if attempt == 3 or retry_after > 300:
+                        self._rate_limit_exhausted = True
+                        raise NvidiaRateLimitError("NVIDIA remains rate limited (HTTP 429); retry in a later run")
+                    # A rate limit applies to the whole queue, not just this job.
+                    retry_after = max(60, retry_after)
+                    self._cooldown_until = max(self._cooldown_until, time.monotonic() + retry_after)
+                    log.warning("NVIDIA HTTP 429; pausing requests for %.0f seconds", retry_after)
                 if attempt < 3:
+                    if retry_after > 300:
+                        raise RuntimeError("NVIDIA requested a long retry delay; retry in a later run")
                     await asyncio.sleep(max(retry_after, 2 ** (attempt + 1)))
             raise RuntimeError(f"NVIDIA request failed after 4 attempts (HTTP {status or 'network error'})")

@@ -4,7 +4,8 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 import requests
 
-from scraper.llm import NvidiaClient
+from scraper import llm
+from scraper.llm import NvidiaClient, NvidiaRateLimitError
 
 
 @pytest.fixture
@@ -50,7 +51,7 @@ def test_retry_throttling(client, monkeypatch):
     monkeypatch.setattr(asyncio, 'sleep', sleep)
     asyncio.run(client.generate('Extract'))
     assert post.call_count == 2
-    sleep.assert_awaited_once_with(7)
+    sleep.assert_awaited_once_with(60)
 
 
 def test_auth_failure_is_redacted_and_not_retried(client, monkeypatch):
@@ -85,3 +86,46 @@ def test_deepseek_thinking_option(client, monkeypatch):
     monkeypatch.setattr(requests, 'post', post)
     asyncio.run(client.generate('Extract'))
     assert post.call_args.kwargs['json']['chat_template_kwargs'] == {'thinking': False}
+
+
+def test_exhausted_rate_limit_stops_queued_requests(client, monkeypatch):
+    post = Mock(return_value=response(429))
+    monkeypatch.setattr(requests, 'post', post)
+    monkeypatch.setattr(asyncio, 'sleep', AsyncMock())
+
+    with pytest.raises(NvidiaRateLimitError, match='HTTP 429'):
+        asyncio.run(client.generate('First product'))
+    assert post.call_count == 4
+    with pytest.raises(NvidiaRateLimitError):
+        asyncio.run(client.generate('Next product'))
+    assert post.call_count == 4
+
+
+def test_long_retry_after_stops_without_retrying_early(client, monkeypatch):
+    post = Mock(return_value=response(429, retry='600'))
+    monkeypatch.setattr(requests, 'post', post)
+    sleep = AsyncMock()
+    monkeypatch.setattr(asyncio, 'sleep', sleep)
+    with pytest.raises(NvidiaRateLimitError):
+        asyncio.run(client.generate('Extract'))
+    assert post.call_count == 1
+    sleep.assert_not_awaited()
+
+
+def test_waiting_request_observes_new_shared_cooldown(client, monkeypatch):
+    now = [0.0]
+    delays = []
+    monkeypatch.setattr(llm.time, 'monotonic', lambda: now[0])
+    client._next_request = 2.0
+
+    async def sleep(delay):
+        delays.append(delay)
+        now[0] += delay
+        if len(delays) == 1:
+            # Another in-flight request was throttled while this one waited.
+            client._cooldown_until = 60.0
+
+    monkeypatch.setattr(asyncio, 'sleep', sleep)
+    asyncio.run(NvidiaClient._wait_for_slot(client))
+    assert delays == [2.0, 58.0]
+    assert now[0] == 60.0
