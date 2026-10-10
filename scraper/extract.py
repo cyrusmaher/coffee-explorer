@@ -1,8 +1,8 @@
 """LLM-based extraction of structured coffee data from Shopify body_html.
 
-Uses Gemini 3 Flash via the google-genai SDK (Vertex AI backend with global
-endpoint). Caches results keyed by sha256(body_html)[:16] so unchanged
-descriptions skip the LLM call.
+Uses NVIDIA-hosted inference through the shared async LLM client. Results are
+cached by a hash of the product title and stripped description so unchanged
+products skip the LLM call.
 
 Parallelism follows the pattern from ds_utils.py: asyncio.Semaphore +
 asyncio.create_task + asyncio.as_completed with tqdm progress.
@@ -12,26 +12,23 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 import re
 import threading
 from pathlib import Path
 
 from bs4 import BeautifulSoup
-from google import genai
+from scraper.llm import NvidiaClient, generate_validated
 from pydantic import ValidationError
 
 from scraper.models import ExtractedCoffee, ShopifyProduct
+from scraper.product_filter import is_excluded_product
 
 log = logging.getLogger(__name__)
 
 CACHE_FILE = Path(__file__).resolve().parent.parent / "data" / "llm_cache.json"
 
-# Gemini 3 Flash — fast, cheap, structured output
-MODEL = "gemini-3-flash-preview"
-
-# Concurrency: Gemini Flash can handle high parallelism
-CONCURRENCY = 30
+# The shared client limits concurrency and request rate across all LLM stages.
+CONCURRENCY = 4
 
 # Save cache every N new LLM calls
 CACHE_SAVE_INTERVAL = 20
@@ -69,6 +66,7 @@ Return a JSON object with these fields:
 - variety (list[string]): Coffee variety/cultivar names (e.g. "Geisha", "Bourbon", "SL-28", "Caturra"). \
   Normalize: "gesha" → "Geisha", "sl28"/"sl-28" → "SL-28"
 - process (string | null): Processing method (e.g. "Washed", "Natural", "Honey", "Anaerobic Natural")
+  For a blend with multiple methods, combine them in one string separated by " / ".
 - elevation (string | null): Growing elevation/altitude (e.g. "1800 masl", "1600-1900m")
 - tasting_notes (list[string]): Flavor/tasting notes (e.g. ["jasmine", "stone fruit", "dark chocolate"])
 - is_coffee_product (bool): true ONLY if this is a bag of coffee beans (roasted or green/unroasted) \
@@ -113,26 +111,6 @@ def _save_cache(cache: dict) -> None:
     )
 
 
-def _init_client() -> genai.Client:
-    """Initialize Gemini client via Vertex AI (global endpoint) or API key fallback."""
-    project = os.environ.get("GOOGLE_CLOUD_PROJECT")
-    location = os.environ.get("VERTEX_AI_LOCATION", "global")
-
-    if project:
-        log.info("Using Vertex AI: project=%s, location=%s", project, location)
-        return genai.Client(vertexai=True, project=project, location=location)
-
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if api_key:
-        log.info("Using Gemini API key (direct)")
-        return genai.Client(api_key=api_key)
-
-    raise RuntimeError(
-        "Set GOOGLE_CLOUD_PROJECT + VERTEX_AI_LOCATION=global for Vertex AI, "
-        "or GEMINI_API_KEY for direct API access."
-    )
-
-
 def _parse_llm_response(text: str) -> ExtractedCoffee:
     """Parse LLM JSON response into ExtractedCoffee, handling markdown fences."""
     cleaned = text.strip()
@@ -143,7 +121,18 @@ def _parse_llm_response(text: str) -> ExtractedCoffee:
 
     try:
         data = json.loads(cleaned)
-        return ExtractedCoffee(**data)
+        if isinstance(data, dict):
+            # Models may use null for an absent array despite the prompt. Keep
+            # unknown values empty without accepting strings or other shapes.
+            for field in ("variety", "tasting_notes"):
+                if data.get(field) is None:
+                    data[field] = []
+            # Blends can name multiple processing methods. Preserve them in
+            # the frontend's text field, while rejecting malformed list items.
+            process = data.get("process")
+            if isinstance(process, list) and all(isinstance(p, str) and p.strip() for p in process):
+                data["process"] = " / ".join(p.strip() for p in process) or None
+        return ExtractedCoffee.model_validate(data)
     except (json.JSONDecodeError, ValidationError) as e:
         log.warning("Failed to parse LLM response: %s\nResponse: %s", e, text[:200])
         raise ExtractionParseError(str(e)) from e
@@ -153,13 +142,13 @@ async def extract_products(
     products: list[ShopifyProduct],
     roaster_slug: str,
 ) -> dict[int, ExtractedCoffee]:
-    """Extract structured data from products using Gemini Flash with async concurrency.
+    """Extract structured data from products using NVIDIA with async concurrency.
 
     Uses asyncio.Semaphore to limit concurrent LLM calls (ds_utils pattern).
     Returns a dict mapping product ID -> ExtractedCoffee.
     """
     cache = _load_cache()
-    client = _init_client()
+    client = NvidiaClient()
     results: dict[int, ExtractedCoffee] = {}
     cache_hits = 0
     llm_calls = 0
@@ -170,6 +159,11 @@ async def extract_products(
     work_items: list[tuple[ShopifyProduct, str, str]] = []  # (product, cache_key, prompt)
 
     for product in products:
+        if is_excluded_product(product):
+            # These listings would be rejected even with a positive extraction.
+            # Do not cache a metadata-based exclusion under a text-only key.
+            results[product.id] = ExtractedCoffee(is_coffee_product=False)
+            continue
         description_text = _strip_html(product.body_html)
         cache_key = _content_hash(f"{product.title}|{description_text}")
 
@@ -212,11 +206,7 @@ async def extract_products(
         nonlocal completed
         async with sem:
             try:
-                response = await client.aio.models.generate_content(
-                    model=MODEL,
-                    contents=prompt,
-                )
-                extracted = _parse_llm_response(response.text)
+                extracted = await generate_validated(client, prompt, _parse_llm_response)
 
                 with cache_lock:
                     cache[cache_key] = extracted.model_dump()

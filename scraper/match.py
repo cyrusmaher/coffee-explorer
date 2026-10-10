@@ -1,4 +1,4 @@
-"""Producer watchlist matching — LLM-based (Flash propose + Pro review).
+"""Producer watchlist matching — explicit identities, then model review.
 
 Loads data/producer_watchlist.csv and matches extracted product data against it.
 Uses async concurrency (same pattern as extract.py).
@@ -9,11 +9,11 @@ import csv
 import hashlib
 import json
 import logging
-import os
 import re
+import unicodedata
 from pathlib import Path
 
-from google import genai
+from scraper.llm import NvidiaClient, generate_validated
 
 from scraper.models import RoastedCoffeeProduct
 
@@ -21,10 +21,6 @@ log = logging.getLogger(__name__)
 
 WATCHLIST_FILE = Path(__file__).resolve().parent.parent / "data" / "producer_watchlist.csv"
 MATCH_CACHE_FILE = Path(__file__).resolve().parent.parent / "data" / "match_cache.json"
-
-# Gemini 3 Flash for proposal, Pro for review
-MODEL_PROPOSE = "gemini-3-flash-preview"
-MODEL_REVIEW = "gemini-3.1-pro-preview"
 
 
 def load_watchlist() -> list[dict]:
@@ -82,30 +78,69 @@ def _find_watchlist_row(name: str, watchlist: list[dict]) -> dict | None:
     return None
 
 
+def _parse_proposals(text: str, batch_count: int) -> list[dict]:
+    matches = _parse_json_response(text)
+    if (not isinstance(matches, list) or len(matches) != batch_count
+        or any(not isinstance(m, dict) or type(m.get("product_number")) is not int
+               or "matched_producer" not in m
+               or (m["matched_producer"] is not None and not isinstance(m["matched_producer"], str))
+               for m in matches)
+        or {m["product_number"] for m in matches} != set(range(1, batch_count + 1))):
+        raise ValueError("Incomplete or invalid matching response")
+    return matches
+
+
+def _parse_review(text: str) -> dict:
+    result = _parse_json_response(text)
+    if not isinstance(result, dict) or result.get("verdict") not in ("accept", "reject"):
+        raise ValueError("Invalid match review verdict")
+    return result
+
+
+def _normalized_identity(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text.casefold())
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    return " ".join(re.findall(r"\w+", text))
+
+
+def _direct_match(product: RoastedCoffeeProduct, watchlist: list[dict]) -> dict | None:
+    """Resolve a unique explicit name; leave ambiguous identities to review."""
+    fields = [f" {_normalized_identity(text)} " for text in (product.title, product.producer_or_farm or "")]
+    country = _normalized_identity(product.origin_country or "")
+    candidates = []
+    for row in watchlist:
+        row_country = _normalized_identity(row.get("country", ""))
+        if country and row_country and country != row_country:
+            continue
+        # Full names and explicitly listed partners are safe textual evidence.
+        # Ignore single-word names and partial surnames.
+        producer = re.sub(r"\([^)]*\)", "", row.get("producer_name", "")).strip()
+        aliases = [producer, *producer.split("&")]
+        # Farms can share names across countries, so require a country match.
+        if country and country == row_country:
+            aliases.extend(re.split(r"[/;]", row.get("farm_or_station", "")))
+        for alias in aliases:
+            normalized = _normalized_identity(alias)
+            if len(normalized.split()) >= 2 and any(f" {normalized} " in field for field in fields):
+                candidates.append(row)
+                break
+    return candidates[0] if len(candidates) == 1 else None
+
+
 async def _tier2_batch_match(
     unmatched: list[RoastedCoffeeProduct],
     watchlist: list[dict],
 ) -> dict[str, dict | None]:
-    """Two-step LLM matching: Flash proposes, Pro reviews.
+    """Two-step LLM matching: one call proposes, another reviews.
 
-    Step 1 (Gemini 3 Flash): Propose candidate matches with strong bias toward
+    Step 1: Propose candidate matches with strong bias toward
     "no match" as the default.
-    Step 2 (Gemini 3.1 Pro): Review each proposed match — only keep matches
+    Step 2: Review each proposed match — only keep matches
     where the product text contains grounded evidence of the association.
 
     Returns dict mapping product_url -> matched watchlist row or None.
     """
-    project = os.environ.get("GOOGLE_CLOUD_PROJECT")
-    location = os.environ.get("VERTEX_AI_LOCATION", "global")
-    api_key = os.environ.get("GEMINI_API_KEY")
-
-    if project:
-        client = genai.Client(vertexai=True, project=project, location=location)
-    elif api_key:
-        client = genai.Client(api_key=api_key)
-    else:
-        log.warning("No GOOGLE_CLOUD_PROJECT or GEMINI_API_KEY — skipping Tier 2 matching")
-        return {}
+    client = NvidiaClient()
 
     cache = _load_match_cache()
     results: dict[str, dict | None] = {}
@@ -139,13 +174,14 @@ async def _tier2_batch_match(
         _save_match_cache(cache)
         return results
 
-    # --- Step 1: Flash proposes candidate matches ---
+    # --- Step 1: Propose candidate matches ---
     batch_size = 10
     batches = [
         uncached_products[i:i + batch_size]
         for i in range(0, len(uncached_products), batch_size)
     ]
-    sem = asyncio.Semaphore(10)
+    sem = asyncio.Semaphore(4)
+    failures: list[str] = []
     proposals: list[tuple[RoastedCoffeeProduct, str]] = []  # (product, matched_name)
     completed = 0
 
@@ -187,10 +223,7 @@ the product is from that producer. Otherwise null.
 Return ONLY the JSON array."""
 
             try:
-                response = await client.aio.models.generate_content(
-                    model=MODEL_PROPOSE, contents=prompt,
-                )
-                matches = _parse_json_response(response.text)
+                matches = await generate_validated(client, prompt, lambda text: _parse_proposals(text, len(batch)))
                 batch_proposals = []
                 for match_result in matches:
                     idx = match_result.get("product_number", 0) - 1
@@ -211,6 +244,7 @@ Return ONLY the JSON array."""
                 return batch_proposals
 
             except Exception as e:
+                failures.append("proposal")
                 log.error("Tier 2 propose batch failed: %s", e)
                 completed += 1
                 for p in batch:
@@ -226,11 +260,14 @@ Return ONLY the JSON array."""
 
     log.info("Tier 2 propose: %d candidates from %d products", len(proposals), len(uncached_products))
 
+    if failures:
+        raise RuntimeError("Producer matching failed; refusing to publish incomplete matches")
+
     if not proposals:
         return results
 
-    # --- Step 2: Pro reviews each proposed match ---
-    review_sem = asyncio.Semaphore(5)  # Pro is heavier, lower concurrency
+    # --- Step 2: Review each proposed match ---
+    review_sem = asyncio.Semaphore(4)
     reviewed = 0
 
     async def review_one(product: RoastedCoffeeProduct, proposed_name: str):
@@ -238,7 +275,7 @@ Return ONLY the JSON array."""
         async with review_sem:
             wp = _find_watchlist_row(proposed_name, watchlist)
             if not wp:
-                return product, None
+                return product, None, False
 
             prompt = f"""\
 Review whether this coffee product is actually from the proposed producer.
@@ -265,27 +302,25 @@ Return a JSON object:
 Return ONLY the JSON object."""
 
             try:
-                response = await client.aio.models.generate_content(
-                    model=MODEL_REVIEW, contents=prompt,
-                )
-                result = _parse_json_response(response.text)
+                result = await generate_validated(client, prompt, _parse_review)
                 reviewed += 1
                 if reviewed % 10 == 0:
                     log.info("Tier 2 review: %d/%d reviewed", reviewed, len(proposals))
 
                 if result.get("verdict") == "accept":
-                    return product, wp
+                    return product, wp, False
                 else:
                     log.info(
                         "Tier 2 REJECTED: '%s' != %s (%s)",
                         product.title[:40], proposed_name, result.get("evidence", "")[:60],
                     )
-                    return product, None
+                    return product, None, False
 
             except Exception as e:
+                failures.append("review")
                 log.error("Tier 2 review failed for '%s': %s", product.title[:40], e)
                 reviewed += 1
-                return product, None
+                return product, None, True
 
     review_tasks = [
         asyncio.create_task(review_one(product, proposed_name))
@@ -293,7 +328,9 @@ Return ONLY the JSON object."""
     ]
 
     for fut in asyncio.as_completed(review_tasks):
-        product, wp = await fut
+        product, wp, failed = await fut
+        if failed:
+            continue
         cache_key = _content_hash(f"{product.title}|{product.producer_or_farm or ''}")
         if wp:
             results[product.product_url] = wp
@@ -303,6 +340,9 @@ Return ONLY the JSON object."""
             cache[cache_key] = None
 
     _save_match_cache(cache)
+
+    if failures:
+        raise RuntimeError("Producer review failed; refusing to publish incomplete matches")
 
     match_count = sum(1 for v in results.values() if v is not None)
     log.info(
@@ -316,11 +356,21 @@ async def match_products(
     products: list[RoastedCoffeeProduct],
     watchlist: list[dict],
 ) -> list[RoastedCoffeeProduct]:
-    """Apply LLM-based matching (Flash propose + Pro review) to all products.
+    """Resolve explicit identities, then propose and review remaining matches.
 
     Mutates and returns the products list with watchlist_match/tier fields set.
     """
-    coffee_products = [p for p in products if p.is_coffee_product]
+    coffee_products = []
+    for product in products:
+        if not product.is_coffee_product:
+            continue
+        matched = _direct_match(product, watchlist)
+        if matched:
+            # Resolve from today's watchlist before consulting old model
+            # rejections. These deterministic results need no model cache.
+            _apply_match(product, matched)
+        else:
+            coffee_products.append(product)
 
     if coffee_products:
         llm_results = await _tier2_batch_match(coffee_products, watchlist)
