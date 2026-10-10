@@ -66,6 +66,7 @@ Return a JSON object with these fields:
 - variety (list[string]): Coffee variety/cultivar names (e.g. "Geisha", "Bourbon", "SL-28", "Caturra"). \
   Normalize: "gesha" → "Geisha", "sl28"/"sl-28" → "SL-28"
 - process (string | null): Processing method (e.g. "Washed", "Natural", "Honey", "Anaerobic Natural")
+  For a blend with multiple methods, combine them in one string separated by " / ".
 - elevation (string | null): Growing elevation/altitude (e.g. "1800 masl", "1600-1900m")
 - tasting_notes (list[string]): Flavor/tasting notes (e.g. ["jasmine", "stone fruit", "dark chocolate"])
 - is_coffee_product (bool): true ONLY if this is a bag of coffee beans (roasted or green/unroasted) \
@@ -126,6 +127,11 @@ def _parse_llm_response(text: str) -> ExtractedCoffee:
             for field in ("variety", "tasting_notes"):
                 if data.get(field) is None:
                     data[field] = []
+            # Blends can name multiple processing methods. Preserve them in
+            # the frontend's text field, while rejecting malformed list items.
+            process = data.get("process")
+            if isinstance(process, list) and all(isinstance(p, str) and p.strip() for p in process):
+                data["process"] = " / ".join(p.strip() for p in process) or None
         return ExtractedCoffee.model_validate(data)
     except (json.JSONDecodeError, ValidationError) as e:
         log.warning("Failed to parse LLM response: %s\nResponse: %s", e, text[:200])

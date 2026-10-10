@@ -56,6 +56,20 @@ def test_invalid_extraction_shapes_remain_rejected(payload):
         _parse_llm_response(json.dumps(payload))
 
 
+def test_blend_process_list_preserves_each_method_as_text():
+    result = _parse_llm_response(json.dumps({
+        'process': ['Floral Symphony Natural', 'Pink Bourbon Washed'],
+        'is_coffee_product': True,
+    }))
+    assert result.process == 'Floral Symphony Natural / Pink Bourbon Washed'
+
+
+@pytest.mark.parametrize('process', [[None], ['Washed', 12], [''], ['Washed', {}]])
+def test_invalid_process_list_items_remain_rejected(process):
+    with pytest.raises(ExtractionParseError):
+        _parse_llm_response(json.dumps({'process': process}))
+
+
 def test_null_arrays_are_cached_as_lists_without_extraction_failure(monkeypatch, tmp_path):
     cache_file = tmp_path / "llm_cache.json"
     monkeypatch.setattr(extract, "CACHE_FILE", cache_file)
@@ -104,7 +118,7 @@ def test_malformed_extraction_retried_before_caching(monkeypatch, tmp_path):
     client = Mock()
     client.generate = AsyncMock(side_effect=[
         '{"origin_country": Colombia}',
-        '{"origin_country":"Colombia","process":["Washed"]}',
+        '{"origin_country":"Colombia","process":[null]}',
         '{"origin_country":"Colombia","process":"Washed","is_coffee_product":true}',
     ])
     monkeypatch.setattr(extract, 'NvidiaClient', lambda: client)
