@@ -17,7 +17,7 @@ import threading
 from pathlib import Path
 
 from bs4 import BeautifulSoup
-from scraper.llm import NvidiaClient
+from scraper.llm import NvidiaClient, generate_validated
 from pydantic import ValidationError
 
 from scraper.models import ExtractedCoffee, ShopifyProduct
@@ -200,8 +200,7 @@ async def extract_products(
         nonlocal completed
         async with sem:
             try:
-                response = await client.generate(prompt)
-                extracted = _parse_llm_response(response)
+                extracted = await generate_validated(client, prompt, _parse_llm_response)
 
                 with cache_lock:
                     cache[cache_key] = extracted.model_dump()

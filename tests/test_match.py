@@ -58,3 +58,26 @@ def test_cache_reused_without_api_calls(setup):
     cache_path.write_text(json.dumps({key: {'producer_name': 'Diego Bermudez'}}))
     assert asyncio.run(match._tier2_batch_match([product], watchlist))[product.product_url] == watchlist[0]
     client.generate.assert_not_awaited()
+
+
+def test_malformed_proposal_and_review_retry_before_caching(setup):
+    client, product, watchlist, cache_path = setup
+    client.generate.side_effect = [
+        '[{"product_number":1 "matched_producer":null}]',
+        '[{"product_number":1,"matched_producer":"Diego Bermudez"}]',
+        '{"verdict":["accept"]}',
+        '{"verdict":"accept","evidence":"Diego Bermudez"}',
+    ]
+    result = asyncio.run(match._tier2_batch_match([product], watchlist))
+    assert result[product.product_url] == watchlist[0]
+    assert client.generate.await_count == 4
+    assert next(iter(json.loads(cache_path.read_text()).values())) == {'producer_name': 'Diego Bermudez'}
+
+
+def test_persistently_malformed_proposal_is_bounded_and_not_cached(setup):
+    client, product, watchlist, cache_path = setup
+    client.generate.return_value = '[{"product_number":1}]'
+    with pytest.raises(RuntimeError, match='refusing to publish'):
+        asyncio.run(match._tier2_batch_match([product], watchlist))
+    assert client.generate.await_count == 3
+    assert json.loads(cache_path.read_text()) == {}

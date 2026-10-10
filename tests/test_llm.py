@@ -1,4 +1,5 @@
 import asyncio
+import json
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -129,3 +130,18 @@ def test_waiting_request_observes_new_shared_cooldown(client, monkeypatch):
     asyncio.run(NvidiaClient._wait_for_slot(client))
     assert delays == [2.0, 58.0]
     assert now[0] == 60.0
+
+
+def test_validated_generation_retries_truncation_and_invalid_json(client, monkeypatch):
+    post = Mock(side_effect=[response(finish='length'), response(content='{"ok":'), response()])
+    monkeypatch.setattr(requests, 'post', post)
+    assert asyncio.run(llm.generate_validated(client, 'Return JSON', json.loads)) == {'ok': True}
+    assert post.call_count == 3
+
+
+@pytest.mark.parametrize('error', [RuntimeError('HTTP 401'), NvidiaRateLimitError('HTTP 429')])
+def test_validation_retries_do_not_repeat_transport_failures(client, error):
+    client.generate = AsyncMock(side_effect=error)
+    with pytest.raises(type(error)):
+        asyncio.run(llm.generate_validated(client, 'Return JSON', json.loads))
+    client.generate.assert_awaited_once()

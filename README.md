@@ -24,6 +24,8 @@ later run. Listings excluded by the publishing rules skip inference entirely.
 Actual access and quotas depend on
 the NVIDIA account; the scraper does not purchase credits or use a paid fallback.
 Existing extraction and matching caches are reused. New responses are validated;
+malformed or truncated model answers get up to three attempts through the same
+paced request queue. Exhausted API failures do not receive extra validation retries.
 failed reviews are not cached as rejected matches. A failed extraction/matching
 stage or output quality check leaves the published JSON unchanged.
 

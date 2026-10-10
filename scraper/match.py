@@ -12,7 +12,7 @@ import logging
 import re
 from pathlib import Path
 
-from scraper.llm import NvidiaClient
+from scraper.llm import NvidiaClient, generate_validated
 
 from scraper.models import RoastedCoffeeProduct
 
@@ -75,6 +75,25 @@ def _find_watchlist_row(name: str, watchlist: list[dict]) -> dict | None:
         if norm and norm in farm:
             return wp
     return None
+
+
+def _parse_proposals(text: str, batch_count: int) -> list[dict]:
+    matches = _parse_json_response(text)
+    if (not isinstance(matches, list) or len(matches) != batch_count
+        or any(not isinstance(m, dict) or type(m.get("product_number")) is not int
+               or "matched_producer" not in m
+               or (m["matched_producer"] is not None and not isinstance(m["matched_producer"], str))
+               for m in matches)
+        or {m["product_number"] for m in matches} != set(range(1, batch_count + 1))):
+        raise ValueError("Incomplete or invalid matching response")
+    return matches
+
+
+def _parse_review(text: str) -> dict:
+    result = _parse_json_response(text)
+    if not isinstance(result, dict) or result.get("verdict") not in ("accept", "reject"):
+        raise ValueError("Invalid match review verdict")
+    return result
 
 
 async def _tier2_batch_match(
@@ -173,15 +192,7 @@ the product is from that producer. Otherwise null.
 Return ONLY the JSON array."""
 
             try:
-                response = await client.generate(prompt)
-                matches = _parse_json_response(response)
-                if (not isinstance(matches, list) or len(matches) != len(batch)
-                    or any(not isinstance(m, dict) or type(m.get("product_number")) is not int
-                           or "matched_producer" not in m
-                           or (m["matched_producer"] is not None and not isinstance(m["matched_producer"], str))
-                           for m in matches)
-                    or {m["product_number"] for m in matches} != set(range(1, len(batch) + 1))):
-                    raise ValueError("Incomplete or invalid matching response")
+                matches = await generate_validated(client, prompt, lambda text: _parse_proposals(text, len(batch)))
                 batch_proposals = []
                 for match_result in matches:
                     idx = match_result.get("product_number", 0) - 1
@@ -260,10 +271,7 @@ Return a JSON object:
 Return ONLY the JSON object."""
 
             try:
-                response = await client.generate(prompt)
-                result = _parse_json_response(response)
-                if not isinstance(result, dict) or result.get("verdict") not in {"accept", "reject"}:
-                    raise ValueError("Invalid match review verdict")
+                result = await generate_validated(client, prompt, _parse_review)
                 reviewed += 1
                 if reviewed % 10 == 0:
                     log.info("Tier 2 review: %d/%d reviewed", reviewed, len(proposals))

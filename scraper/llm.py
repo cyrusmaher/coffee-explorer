@@ -5,6 +5,7 @@ import logging
 import os
 import time
 from email.utils import parsedate_to_datetime
+from typing import Callable, TypeVar
 
 import requests
 
@@ -12,10 +13,39 @@ ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions"
 DEFAULT_MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b"
 RETRYABLE = {408, 429, 500, 502, 503, 504, 529}
 log = logging.getLogger(__name__)
+T = TypeVar("T")
 
 
 class NvidiaRateLimitError(RuntimeError):
     """The provider is still throttling; preserve progress for a later run."""
+
+
+class NvidiaCompletionError(RuntimeError):
+    """A successful HTTP response did not contain a complete model answer."""
+
+
+async def generate_validated(client: "NvidiaClient", prompt: str, validate: Callable[[str], T]) -> T:
+    """Retry malformed model answers, while preserving transport retry limits."""
+    for attempt in range(3):
+        try:
+            response = await client.generate(prompt)
+        except NvidiaCompletionError:
+            if attempt == 2:
+                raise
+        else:
+            try:
+                return validate(response)
+            except ValueError:
+                if attempt == 2:
+                    raise
+        log.warning("Invalid model answer; retrying validation (%d/3)", attempt + 2)
+        if attempt == 0:
+            prompt += (
+                "\nYour previous answer was incomplete or did not follow the requested JSON schema. "
+                "Generate a complete answer again, with valid JSON and exactly the requested field types. "
+                "Do not include comments or explanations outside the JSON."
+            )
+    raise AssertionError("Unreachable validation retry state")
 
 
 class NvidiaClient:
@@ -80,7 +110,7 @@ class NvidiaClient:
                 if choice.get("finish_reason") != "stop" or not isinstance(content, str) or not content.strip():
                     raise ValueError("Missing or incomplete completion")
             except (ValueError, KeyError, IndexError, TypeError):
-                raise RuntimeError("NVIDIA returned a missing, invalid, or truncated completion") from None
+                raise NvidiaCompletionError("NVIDIA returned a missing, invalid, or truncated completion") from None
             return 200, content, 0
 
     async def generate(self, prompt: str) -> str:

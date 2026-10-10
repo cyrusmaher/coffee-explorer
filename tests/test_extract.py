@@ -96,3 +96,21 @@ def test_excluded_products_skip_inference_without_poisoning_text_cache(monkeypat
     result = asyncio.run(extract.extract_products([product], "test"))
     assert result[1].is_coffee_product is True
     client.generate.assert_awaited_once()
+
+
+def test_malformed_extraction_retried_before_caching(monkeypatch, tmp_path):
+    cache_file = tmp_path / 'llm_cache.json'
+    monkeypatch.setattr(extract, 'CACHE_FILE', cache_file)
+    client = Mock()
+    client.generate = AsyncMock(side_effect=[
+        '{"origin_country": Colombia}',
+        '{"origin_country":"Colombia","process":["Washed"]}',
+        '{"origin_country":"Colombia","process":"Washed","is_coffee_product":true}',
+    ])
+    monkeypatch.setattr(extract, 'NvidiaClient', lambda: client)
+    product = ShopifyProduct(id=1, title='Colombia Lot', handle='lot', body_html='Washed coffee from Colombia')
+    result = asyncio.run(extract.extract_products([product], 'test'))
+    assert result[1].origin_country == 'Colombia'
+    assert result[1].process == 'Washed'
+    assert client.generate.await_count == 3
+    assert next(iter(json.loads(cache_file.read_text()).values()))['process'] == 'Washed'
