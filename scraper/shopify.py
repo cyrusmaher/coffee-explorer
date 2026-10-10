@@ -3,6 +3,7 @@
 import logging
 import re
 import time
+from fractions import Fraction
 
 import requests
 
@@ -28,25 +29,30 @@ HEADERS = {
 # ---------- Variant selection ----------
 
 _WEIGHT_RE = re.compile(
-    r"(?<![\d.,])(\d+(?:,\d{3})*(?:\.\d+)?)\s*(oz|grams?|gr|g|lbs?|kg)s?\b",
+    r"(?<![\d.,])(?:(?P<count>\d+)\s*[x×]\s*)?"
+    r"(?P<weight>(?:\d+\s+)?\d+\s*/\s*\d+|\d+(?:,\d{3})*(?:\.\d+)?)"
+    r"\s*(?P<unit>oz|grams?|gr|g|lbs?|kg)s?\b"
+    r"(?:\s*[x×]\s*(?P<count_after>\d+))?",
     re.IGNORECASE,
 )
 
 
 def _parse_variant_grams(variant: dict) -> int:
-    """Extract weight in grams from a variant, trying grams field then title."""
-    grams = variant.get("grams", 0) or 0
-    if grams > 0:
-        return grams
-
-    # Try to parse from variant title (e.g. "250g", "10oz", "1lb", "5lbs")
+    """Prefer labeled net bag weight; Shopify grams may include packaging."""
     title = variant.get("title", "")
     m = _WEIGHT_RE.search(title)
     if not m:
-        return 0
+        return variant.get("grams", 0) or 0
 
-    val = float(m.group(1).replace(",", ""))
-    unit = m.group(2).lower().rstrip("s")  # normalize plurals
+    weight = re.sub(r"\s*/\s*", "/", m.group("weight").replace(",", ""))
+    try:
+        # Fraction accepts decimals and simple fractions; summing also handles
+        # mixed sizes such as "1 1/2lb".
+        val = sum(Fraction(part) for part in weight.split())
+    except (ValueError, ZeroDivisionError):
+        return variant.get("grams", 0) or 0
+    val = float(val) * int(m.group("count") or 1) * int(m.group("count_after") or 1)
+    unit = m.group("unit").lower().rstrip("s")  # normalize plurals
     if unit in ("g", "gr", "gram"):
         return int(val)
     if unit == "oz":

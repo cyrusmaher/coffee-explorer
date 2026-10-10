@@ -81,3 +81,37 @@ def test_persistently_malformed_proposal_is_bounded_and_not_cached(setup):
         asyncio.run(match._tier2_batch_match([product], watchlist))
     assert client.generate.await_count == 3
     assert json.loads(cache_path.read_text()) == {}
+
+
+@pytest.mark.parametrize('title,producer,country,expected', [
+    ('Diego Bermúdez - Red Plum', 'Diego Bermudez', 'Colombia', 'Diego Bermudez'),
+    ('Finca Deborah - Terroir Gesha', 'Finca Deborah', 'Panama', 'Jamison Savage'),
+    ('Iris Estate - Vivid', None, 'Panama', 'Jamison Savage'),
+    ('Jhonatan Gasca - Pacamara', 'Jhonatan Gasca', 'Colombia', 'Jhonatan Gasca & Alejandra Muñoz'),
+    ('Colombia Coffee', None, 'Colombia', None),
+    ('Finca Deborahson', None, 'Panama', None),
+    ('El Paraiso', None, 'Honduras', None),
+    ('Finca Deborah', None, 'Colombia', None),
+    ('Finca Deborah', None, None, None),
+    ('Diego Bermudez / Jhonatan Gasca Blend', None, 'Colombia', None),
+])
+def test_direct_match_requires_unique_explicit_identity(title, producer, country, expected):
+    watchlist = [
+        {'producer_name':'Diego Bermudez', 'farm_or_station':'Finca El Paraiso', 'country':'Colombia'},
+        {'producer_name':'Jamison Savage', 'farm_or_station':'Finca Deborah / Iris Estate', 'country':'Panama'},
+        {'producer_name':'Jhonatan Gasca & Alejandra Muñoz', 'farm_or_station':'Finca Zarza', 'country':'Colombia'},
+    ]
+    product = RoastedCoffeeProduct(roaster_slug='test', roaster_name='Test', product_url='https://example.com/a',
+        title=title, handle='a', producer_or_farm=producer, origin_country=country)
+    result = match._direct_match(product, watchlist)
+    assert (result or {}).get('producer_name') == expected
+
+
+def test_explicit_name_match_overrides_cached_false_negative(setup, monkeypatch):
+    client, product, watchlist, cache_path = setup
+    watchlist[0]['tier'] = 'Legend'
+    cache_path.write_text(json.dumps({match._content_hash(f'{product.title}|{product.producer_or_farm}'): None}))
+    result = asyncio.run(match.match_products([product], watchlist))
+    assert result[0].watchlist_match == 'Diego Bermudez'
+    assert result[0].watchlist_tier == 'Legend'
+    client.generate.assert_not_awaited()

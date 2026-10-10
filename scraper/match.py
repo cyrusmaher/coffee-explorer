@@ -1,4 +1,4 @@
-"""Producer watchlist matching — LLM-based (proposal + independent review).
+"""Producer watchlist matching — explicit identities, then model review.
 
 Loads data/producer_watchlist.csv and matches extracted product data against it.
 Uses async concurrency (same pattern as extract.py).
@@ -10,6 +10,7 @@ import hashlib
 import json
 import logging
 import re
+import unicodedata
 from pathlib import Path
 
 from scraper.llm import NvidiaClient, generate_validated
@@ -94,6 +95,36 @@ def _parse_review(text: str) -> dict:
     if not isinstance(result, dict) or result.get("verdict") not in ("accept", "reject"):
         raise ValueError("Invalid match review verdict")
     return result
+
+
+def _normalized_identity(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text.casefold())
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    return " ".join(re.findall(r"\w+", text))
+
+
+def _direct_match(product: RoastedCoffeeProduct, watchlist: list[dict]) -> dict | None:
+    """Resolve a unique explicit name; leave ambiguous identities to review."""
+    fields = [f" {_normalized_identity(text)} " for text in (product.title, product.producer_or_farm or "")]
+    country = _normalized_identity(product.origin_country or "")
+    candidates = []
+    for row in watchlist:
+        row_country = _normalized_identity(row.get("country", ""))
+        if country and row_country and country != row_country:
+            continue
+        # Full names and explicitly listed partners are safe textual evidence.
+        # Ignore single-word names and partial surnames.
+        producer = re.sub(r"\([^)]*\)", "", row.get("producer_name", "")).strip()
+        aliases = [producer, *producer.split("&")]
+        # Farms can share names across countries, so require a country match.
+        if country and country == row_country:
+            aliases.extend(re.split(r"[/;]", row.get("farm_or_station", "")))
+        for alias in aliases:
+            normalized = _normalized_identity(alias)
+            if len(normalized.split()) >= 2 and any(f" {normalized} " in field for field in fields):
+                candidates.append(row)
+                break
+    return candidates[0] if len(candidates) == 1 else None
 
 
 async def _tier2_batch_match(
@@ -325,11 +356,21 @@ async def match_products(
     products: list[RoastedCoffeeProduct],
     watchlist: list[dict],
 ) -> list[RoastedCoffeeProduct]:
-    """Apply LLM-based matching (proposal + independent review) to all products.
+    """Resolve explicit identities, then propose and review remaining matches.
 
     Mutates and returns the products list with watchlist_match/tier fields set.
     """
-    coffee_products = [p for p in products if p.is_coffee_product]
+    coffee_products = []
+    for product in products:
+        if not product.is_coffee_product:
+            continue
+        matched = _direct_match(product, watchlist)
+        if matched:
+            # Resolve from today's watchlist before consulting old model
+            # rejections. These deterministic results need no model cache.
+            _apply_match(product, matched)
+        else:
+            coffee_products.append(product)
 
     if coffee_products:
         llm_results = await _tier2_batch_match(coffee_products, watchlist)
