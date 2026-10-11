@@ -11215,5 +11215,58 @@
       "ginger"
     ],
     "is_coffee_product": true
+  },
+  "f5ecef614af2d0cc": {
+    "producer_or_farm": "Morgan Estate",
+    "origin_country": "Panama",
+    "origin_region": "Chiriquí",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Natural",
+    "elevation": "1,850–1,900 metres above sea level",
+    "tasting_notes": [
+      "White Florals",
+      "ripe strawberry",
+      "peach",
+      "Red Grape",
+      "Champagne",
+      "creamy sweetness"
+    ],
+    "is_coffee_product": true
+  },
+  "ebe8bdd58b02f783": {
+    "producer_or_farm": "Antonio Recinos Alvarado & Juan Sebastián Recinos",
+    "origin_country": "Guatemala",
+    "origin_region": "Huehuetenango",
+    "variety": [
+      "Typica"
+    ],
+    "process": "Oak Washed",
+    "elevation": "1700–1900 masl",
+    "tasting_notes": [
+      "Pomelo",
+      "Apple",
+      "Fig",
+      "White Florals"
+    ],
+    "is_coffee_product": true
+  },
+  "bc6d34de94e16daa": {
+    "producer_or_farm": "Manuel Burac & Lost Origin",
+    "origin_country": "Panama",
+    "origin_region": "Horqueta, Boquete, Chiriquí",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Natural",
+    "elevation": "1600 masl",
+    "tasting_notes": [
+      "Raspberry Tea",
+      "Guava",
+      "Candied Grape",
+      "Strawberry"
+    ],
+    "is_coffee_product": true
   }
 }
