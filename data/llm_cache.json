@@ -11268,5 +11268,232 @@
       "Strawberry"
     ],
     "is_coffee_product": true
+  },
+  "e1227b712a4feb94": {
+    "producer_or_farm": "Finca Santa Cruz",
+    "origin_country": "Mexico",
+    "origin_region": "Chiapas",
+    "variety": [
+      "Geisha"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "1e524bcda413afe7": {
+    "producer_or_farm": "Carolina Chalapud Daza and Guillermo Torres Daza",
+    "origin_country": "Colombia",
+    "origin_region": "Nariño",
+    "variety": [
+      "Pink Bourbon"
+    ],
+    "process": "Washed",
+    "elevation": "2,200 meters",
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "766c81ebbb5a05c5": {
+    "producer_or_farm": "Hacienda La Esmeralda",
+    "origin_country": "Panama",
+    "origin_region": null,
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Anaerobic",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "f5f97508989e01bf": {
+    "producer_or_farm": "Huver Castillo",
+    "origin_country": "Colombia",
+    "origin_region": "Cauca and Nariño",
+    "variety": [
+      "Caturra",
+      "Pink Bourbon"
+    ],
+    "process": "Anaerobic / Honey / Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "5758f313720afc64": {
+    "producer_or_farm": "Aricha community / Sebastian Ramirez",
+    "origin_country": "Ethiopia & Colombia",
+    "origin_region": null,
+    "variety": [
+      "Various"
+    ],
+    "process": "Washed / Co-ferment",
+    "elevation": null,
+    "tasting_notes": [
+      "sweet watermelon",
+      "peach",
+      "dark honey",
+      "black tea"
+    ],
+    "is_coffee_product": true
+  },
+  "b01695e42a85a8fe": {
+    "producer_or_farm": "Yaye washing station",
+    "origin_country": "Ethiopia",
+    "origin_region": "Arbegona woreda of Sidama",
+    "variety": [],
+    "process": "Black Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "5250c59d99f8af51": {
+    "producer_or_farm": "Ninety Plus Gesha Estates",
+    "origin_country": "Panama",
+    "origin_region": "Chiriquí",
+    "variety": [
+      "Geisha"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "Persian pickled lime",
+      "frankincense"
+    ],
+    "is_coffee_product": true
+  },
+  "9857c0f6231df7d6": {
+    "producer_or_farm": "Finca Los Bellotos",
+    "origin_country": "El Salvador",
+    "origin_region": null,
+    "variety": [
+      "Bernardina"
+    ],
+    "process": "Anaerobic Honey",
+    "elevation": null,
+    "tasting_notes": [
+      "Pineapple",
+      "Lemon Sherbet",
+      "Green Apple",
+      "Cola"
+    ],
+    "is_coffee_product": true
+  },
+  "49216771070cab66": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "1716d487f12b592c": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "Cherris",
+      "Baking Spice",
+      "Dark Chocolate"
+    ],
+    "is_coffee_product": true
+  },
+  "f0641b3d954067e9": {
+    "producer_or_farm": "Finca Las Brumas",
+    "origin_country": "El Salvador",
+    "origin_region": "Santa Ana",
+    "variety": [
+      "Pacamara"
+    ],
+    "process": "Honey",
+    "elevation": "2000 MASL",
+    "tasting_notes": [
+      "Asian Pear",
+      "Jade Oolong",
+      "Nougat",
+      "Starfruit"
+    ],
+    "is_coffee_product": true
+  },
+  "6237ac2196dadf7e": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": "Caldas",
+    "variety": [
+      "Castillo",
+      "Colombia"
+    ],
+    "process": "Natural",
+    "elevation": "1650 - 1800 MASL",
+    "tasting_notes": [
+      "Natural Wine",
+      "Black Cherry",
+      "Raw Chocolate"
+    ],
+    "is_coffee_product": true
+  },
+  "b3bf9cb025ab719d": {
+    "producer_or_farm": "Finca Santa Monica",
+    "origin_country": "Colombia",
+    "origin_region": "Quindio",
+    "variety": [
+      "Castillo"
+    ],
+    "process": "Honey + Wine Yeast Fermentation",
+    "elevation": "2100 MASL",
+    "tasting_notes": [
+      "Passion Fruit",
+      "Pineapple",
+      "Gummy Bears",
+      "Rose"
+    ],
+    "is_coffee_product": true
+  },
+  "773bcf6811e4f5e6": {
+    "producer_or_farm": "San Isidro",
+    "origin_country": "Honduras",
+    "origin_region": "Copan",
+    "variety": [
+      "Yellow Obata"
+    ],
+    "process": "Natural",
+    "elevation": "1,300 MASL",
+    "tasting_notes": [
+      "tangerine",
+      "nectarine",
+      "starfruit",
+      "Maria's cookies"
+    ],
+    "is_coffee_product": true
+  },
+  "8e9109d7db8f5293": {
+    "producer_or_farm": "Pepe Jijón, Finca Soledad",
+    "origin_country": "Ecuador",
+    "origin_region": "Intag Valley, Imbabura",
+    "variety": [
+      "Sidra"
+    ],
+    "process": "Wave Washed",
+    "elevation": "1515 masl",
+    "tasting_notes": [
+      "Grapes",
+      "Kiwi",
+      "Nectarine",
+      "Honeysuckle"
+    ],
+    "is_coffee_product": true
+  },
+  "8657b2fe6797ee57": {
+    "producer_or_farm": "Green Bean Asia",
+    "origin_country": "Myanmar",
+    "origin_region": "Southern Shan State",
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
   }
 }
