@@ -6,7 +6,7 @@ import pytest
 
 from scraper import extract
 from scraper.extract import ExtractionParseError, _parse_llm_response, _too_many_failures
-from scraper.models import ShopifyProduct
+from scraper.models import ExtractedCoffee, ShopifyProduct
 
 
 def test_failure_guard_rejects_total_failure_for_tiny_batch():
@@ -128,3 +128,36 @@ def test_malformed_extraction_retried_before_caching(monkeypatch, tmp_path):
     assert result[1].process == 'Washed'
     assert client.generate.await_count == 3
     assert next(iter(json.loads(cache_file.read_text()).values()))['process'] == 'Washed'
+
+
+def test_cached_extractions_do_not_require_credentials(monkeypatch, tmp_path):
+    product = ShopifyProduct(id=1, title="Colombia Lot", handle="lot", body_html="Washed coffee")
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({extract._content_hash("Colombia Lot|Washed coffee"): {"is_coffee_product": True}}))
+    monkeypatch.setattr(extract, "CACHE_FILE", path)
+    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
+    assert asyncio.run(extract.extract_products([product], "test"))[1].is_coffee_product
+
+
+def test_empty_description_does_not_permanently_exclude_coffee(monkeypatch, tmp_path):
+    product = ShopifyProduct(id=1, title="Colombia Washed Lot", handle="lot", product_type="Coffee")
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({extract._content_hash("Colombia Washed Lot|"): {"is_coffee_product": False}}))
+    monkeypatch.setattr(extract, "CACHE_FILE", path)
+    client = Mock(generate=AsyncMock(return_value='{"origin_country":"Colombia","is_coffee_product":true}'))
+    monkeypatch.setattr(extract, "NvidiaClient", lambda: client)
+    result = asyncio.run(extract.extract_products([product], "test"))
+    assert result[1].is_coffee_product
+    assert "Product type: Coffee" in client.generate.call_args.args[0]
+
+
+def test_structured_page_facts_override_old_empty_description_rejection(monkeypatch, tmp_path):
+    product = ShopifyProduct(id=1, title="MANDELA NATURAL", handle="mandela-natural",
+                             structured_coffee=ExtractedCoffee(variety=["MANDELA"], process="Natural"))
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({extract._content_hash("MANDELA NATURAL|"): {"is_coffee_product": False}}))
+    monkeypatch.setattr(extract, "CACHE_FILE", path)
+    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
+    result = asyncio.run(extract.extract_products([product], "granja-la-esperanza"))
+    assert result[1].is_coffee_product
+    assert result[1].variety == ["MANDELA"]

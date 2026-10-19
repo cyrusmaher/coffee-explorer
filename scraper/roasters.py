@@ -12,6 +12,7 @@ ROASTERS: list[RoasterConfig] = [
         slug="george-howell",
         name="George Howell Coffee",
         base_url="https://georgehowellcoffee.com",
+        collection="all-coffee",
     ),
     RoasterConfig(
         slug="black-white",

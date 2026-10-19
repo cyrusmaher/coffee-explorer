@@ -2,6 +2,7 @@ import pytest
 
 from scraper.models import RoastedCoffeeProduct
 from scraper.quality import OutputQualityError, validate_output_quality
+from scraper.quality import validate_roaster_coverage
 
 
 def coffee(
@@ -84,3 +85,13 @@ def test_quality_gate_rejects_lot_name_process_values():
 
     with pytest.raises(OutputQualityError, match="suspicious process"):
         validate_output_quality(products)
+
+
+def test_large_total_does_not_hide_missing_roaster():
+    with pytest.raises(OutputQualityError, match="missing: no coffee"):
+        validate_roaster_coverage([coffee(i) for i in range(200)], ["test", "missing"])
+
+
+def test_roaster_collapse_is_checked_independently():
+    with pytest.raises(OutputQualityError, match="collapsed"):
+        validate_roaster_coverage([coffee(1)], ["test"], [{"roaster_slug": "test"}] * 20)

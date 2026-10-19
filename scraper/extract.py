@@ -16,6 +16,8 @@ import re
 import threading
 from pathlib import Path
 
+from scraper.storage import write_json
+
 from bs4 import BeautifulSoup
 from scraper.llm import NvidiaClient, generate_validated
 from pydantic import ValidationError
@@ -106,9 +108,7 @@ def _load_cache() -> dict:
 
 def _save_cache(cache: dict) -> None:
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    CACHE_FILE.write_text(
-        json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8",
-    )
+    write_json(CACHE_FILE, cache)
 
 
 def _parse_llm_response(text: str) -> ExtractedCoffee:
@@ -148,7 +148,6 @@ async def extract_products(
     Returns a dict mapping product ID -> ExtractedCoffee.
     """
     cache = _load_cache()
-    client = NvidiaClient()
     results: dict[int, ExtractedCoffee] = {}
     cache_hits = 0
     llm_calls = 0
@@ -164,7 +163,14 @@ async def extract_products(
             # Do not cache a metadata-based exclusion under a text-only key.
             results[product.id] = ExtractedCoffee(is_coffee_product=False)
             continue
+        if product.structured_coffee is not None:
+            results[product.id] = product.structured_coffee
+            continue
         description_text = _strip_html(product.body_html)
+        if not description_text:
+            # Sparse listings can still be real coffee. Include Shopify metadata
+            # and bypass old text-only negative entries for empty descriptions.
+            description_text = f"Product type: {product.product_type}. Tags: {', '.join(product.tags)}"
         cache_key = _content_hash(f"{product.title}|{description_text}")
 
         if cache_key in cache:
@@ -172,13 +178,8 @@ async def extract_products(
                 results[product.id] = ExtractedCoffee(**cache[cache_key])
                 cache_hits += 1
                 continue
-            except ValidationError:
+            except (ValidationError, TypeError):
                 pass
-
-        if not description_text:
-            results[product.id] = ExtractedCoffee(is_coffee_product=False)
-            cache[cache_key] = results[product.id].model_dump()
-            continue
 
         if len(description_text) > 2000:
             description_text = description_text[:2000] + "..."
@@ -197,6 +198,8 @@ async def extract_products(
     if not work_items:
         _save_cache(cache)
         return results
+
+    client = NvidiaClient()
 
     # Async extraction with semaphore-bounded concurrency
     sem = asyncio.Semaphore(CONCURRENCY)

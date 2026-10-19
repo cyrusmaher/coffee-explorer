@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections import Counter
 from collections.abc import Sequence
 
 from scraper.models import RoastedCoffeeProduct
@@ -20,6 +21,19 @@ SUSPICIOUS_PROCESS_VALUES = {
 
 class OutputQualityError(RuntimeError):
     """Raised when generated data is too degraded to publish."""
+
+
+def validate_roaster_coverage(products, expected_slugs, previous=()) -> None:
+    counts = Counter(p.roaster_slug for p in products)
+    previous_counts = Counter(p["roaster_slug"] for p in previous)
+    problems = []
+    for slug in expected_slugs:
+        if not counts[slug]:
+            problems.append(f"{slug}: no coffee products")
+        elif previous_counts[slug] >= 10 and counts[slug] < previous_counts[slug] * 0.5:
+            problems.append(f"{slug}: catalog collapsed from {previous_counts[slug]} to {counts[slug]}")
+    if problems:
+        raise OutputQualityError("; ".join(problems))
 
 
 def validate_output_quality(products: Sequence[RoastedCoffeeProduct]) -> None:

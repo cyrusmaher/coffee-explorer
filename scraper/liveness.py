@@ -89,8 +89,10 @@ def _check_host(host: str, urls: list[str]) -> tuple[list[str], list[str]]:
             elif resp.status_code == 429:
                 log.warning("  429 rate-limited on %s, stopping host", host)
                 break
-            else:
+            elif resp.status_code == 200:
                 good.append(url)
+            else:
+                log.warning("  Unconfirmed (HTTP %d): %s", resp.status_code, url)
         except Exception as e:
             log.warning("  Error checking %s: %s", url, e)
         time.sleep(DELAY_BETWEEN_REQUESTS)
@@ -113,12 +115,12 @@ def run() -> None:
     to_check: list[dict] = []
     for p in data:
         url = p["product_url"]
-        if url in cache:
+        if url in cache and p.get("is_available", True):
             continue
         to_check.append(p)
 
     if not to_check:
-        log.info("No sold-out products need checking. Done.")
+        log.info("No product URLs need checking. Done.")
         return
 
     # Group by host
@@ -127,7 +129,7 @@ def run() -> None:
         host = urlparse(p["product_url"]).netloc
         by_host[host].append(p["product_url"])
 
-    log.info("Checking %d sold-out products across %d hosts...",
+    log.info("Checking %d products across %d hosts...",
              len(to_check), len(by_host))
 
     all_dead: list[str] = []
@@ -145,10 +147,7 @@ def run() -> None:
 
     # Update cache with newly confirmed good URLs
     cache.update(all_good)
-    # Also add all in-stock product URLs to cache
-    for p in data:
-        if p.get("is_available", True):
-            cache.add(p["product_url"])
+    cache.difference_update(all_dead)
     _save_cache(cache)
 
     if not all_dead:

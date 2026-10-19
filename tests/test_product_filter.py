@@ -172,3 +172,16 @@ def test_allows_metadata_weak_product_with_positive_extraction():
     extracted = SimpleNamespace(is_coffee_product=True)
 
     assert should_publish_product(product(product_type="", tags=[]), extracted)
+
+
+def test_george_howell_public_retail_collection_is_not_wholesale():
+    item = product(roaster_slug="george-howell", source_collection="all-coffee",
+                   product_type="Coffee - Limited", tags=["b2b", "wholesale_list"])
+    assert should_publish_product(item)
+    item["source_collection"] = None
+    assert not should_publish_product(item)
+
+
+def test_george_howell_exception_does_not_allow_internal_products():
+    assert not should_publish_product(product(roaster_slug="george-howell", source_collection="all-coffee",
+                                              tags=["b2b", "internal"]))

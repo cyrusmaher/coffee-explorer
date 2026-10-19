@@ -13,6 +13,8 @@ import re
 import unicodedata
 from pathlib import Path
 
+from scraper.storage import write_json
+
 from scraper.llm import NvidiaClient, generate_validated
 
 from scraper.models import RoastedCoffeeProduct
@@ -44,9 +46,7 @@ def _load_match_cache() -> dict:
 
 def _save_match_cache(cache: dict) -> None:
     MATCH_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    MATCH_CACHE_FILE.write_text(
-        json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8",
-    )
+    write_json(MATCH_CACHE_FILE, cache)
 
 
 def _content_hash(text: str) -> str:
@@ -140,8 +140,6 @@ async def _tier2_batch_match(
 
     Returns dict mapping product_url -> matched watchlist row or None.
     """
-    client = NvidiaClient()
-
     cache = _load_match_cache()
     results: dict[str, dict | None] = {}
 
@@ -173,6 +171,8 @@ async def _tier2_batch_match(
     if not uncached_products:
         _save_match_cache(cache)
         return results
+
+    client = NvidiaClient()
 
     # --- Step 1: Propose candidate matches ---
     batch_size = 10

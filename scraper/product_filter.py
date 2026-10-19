@@ -208,7 +208,13 @@ def _tags(product: Any) -> list[str]:
     raw = _field(product, "tags", []) or []
     if isinstance(raw, str):
         raw = [t.strip() for t in raw.split(",")]
-    return [str(t).strip().lower() for t in raw if str(t).strip()]
+    tags = [str(t).strip().lower() for t in raw if str(t).strip()]
+    if (_field(product, "roaster_slug") == "george-howell"
+            and _field(product, "source_collection") == "all-coffee"):
+        # This public retail collection uses these two tags on ordinary bags.
+        # Other sources and explicit private/internal tags retain their guards.
+        tags = [t for t in tags if t not in {"b2b", "wholesale_list"}]
+    return tags
 
 
 def is_excluded_product(product: Any) -> bool:

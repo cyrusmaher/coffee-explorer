@@ -2,29 +2,33 @@
 
 import logging
 import re
-import time
 from fractions import Fraction
 
-import requests
+from bs4 import BeautifulSoup
+from scraper.catalog import CatalogError, fetch_shopify_catalog, get, tags as product_tags
 
-from scraper.models import RoasterConfig, ShopifyProduct
+from scraper.models import ExtractedCoffee, RoasterConfig, ShopifyProduct
+from scraper.product_filter import is_excluded_product
 
 log = logging.getLogger(__name__)
 
-# Shopify returns max 250 products per page
-PAGE_LIMIT = 250
-REQUEST_TIMEOUT = 30
-POLITE_DELAY = 1.0  # seconds between paginated requests
 
-# Headers to look like a normal browser
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
-    ),
-    "Accept": "application/json",
-}
+def parse_granja_details(html: str) -> ExtractedCoffee:
+    """Granja stores coffee facts in page accordions, outside Shopify body_html."""
+    soup = BeautifulSoup(html, "html.parser")
+    specs = {}
+    for detail in soup.select("details"):
+        title = detail.select_one("summary")
+        value = detail.select_one(".accordion__content")
+        if title and value:
+            specs[title.get_text(" ", strip=True).upper()] = value.get_text(" ", strip=True)
+    if not all(specs.get(key) for key in ("FARM", "VARIETY", "PROCESO")):
+        raise CatalogError("Granja product is missing its coffee specifications")
+    return ExtractedCoffee(
+        producer_or_farm=specs["FARM"], variety=[specs["VARIETY"]],
+        process=specs["PROCESO"].title(), elevation=specs.get("ALTITUDE") or None,
+        tasting_notes=[v.strip() for v in re.split(r"[,;]", specs.get("CUP PROFLE", specs.get("CUP PROFILE", ""))) if v.strip()],
+    )
 
 # ---------- Variant selection ----------
 
@@ -132,112 +136,76 @@ def fetch_products(roaster: RoasterConfig) -> list[ShopifyProduct]:
     Returns parsed ShopifyProduct objects.
     """
     all_products: list[ShopifyProduct] = []
-    page = 1
+    raw_products = fetch_shopify_catalog(roaster.base_url, roaster.collection)
+    for p in raw_products:
+        variants = p.get("variants", [])
 
-    while True:
-        if roaster.collection:
-            url = f"{roaster.base_url}/collections/{roaster.collection}/products.json"
-        else:
-            url = f"{roaster.base_url}/products.json"
-        params = {"limit": PAGE_LIMIT, "page": page}
+        tags = product_tags(p)
 
-        log.info(
-            "[%s] Fetching page %d from %s ...",
-            roaster.slug, page, url,
+        title = p.get("title", "")
+        product_type = p.get("product_type", "")
+
+        # Skip products tagged as archived by the roaster
+        if any(t.lower() == "archived" for t in tags):
+            continue
+
+        # Availability: product is in-stock if ANY variant is available
+        is_available = any(v.get("available", False) for v in variants)
+
+        # Pick best standard + sample variants
+        standard_v, sample_v = _pick_variants(variants)
+
+        # Standard variant fields
+        price_raw = float(standard_v.get("price", "0") or "0")
+        price = f"{price_raw / roaster.price_divisor:.2f}" if price_raw else ""
+        weight_grams = _parse_variant_grams(standard_v)
+        weight_label = _variant_weight_label(standard_v, weight_grams)
+
+        # Sample variant fields
+        sample_price = ""
+        sample_grams = 0
+        sample_label = ""
+        if sample_v is not None:
+            sample_raw = float(sample_v.get("price", "0") or "0")
+            sample_price = f"{sample_raw / roaster.price_divisor:.2f}" if sample_raw else ""
+            sample_grams = _parse_variant_grams(sample_v)
+            sample_label = _variant_weight_label(sample_v, sample_grams)
+
+        # Extract first image URL
+        images = p.get("images", [])
+        image_url = images[0].get("src", "") if images else ""
+        if not image_url and p.get("image"):
+            image_url = p["image"].get("src", "")
+
+        product = ShopifyProduct(
+            roaster_slug=roaster.slug,
+            source_collection=roaster.collection,
+            id=p["id"],
+            title=title,
+            handle=p.get("handle", ""),
+            vendor=p.get("vendor", ""),
+            product_type=product_type,
+            tags=tags,
+            body_html=p.get("body_html", "") or "",
+            created_at=p.get("created_at", ""),
+            is_available=is_available,
+            price=price,
+            weight_grams=weight_grams,
+            weight_label=weight_label,
+            sample_price=sample_price,
+            sample_grams=sample_grams,
+            sample_label=sample_label,
+            image_url=image_url,
         )
 
-        try:
-            resp = requests.get(
-                url, params=params, headers=HEADERS, timeout=REQUEST_TIMEOUT,
-            )
-            resp.raise_for_status()
-        except requests.RequestException as e:
-            log.error("[%s] Failed to fetch products: %s", roaster.slug, e)
-            break
+        if roaster.slug == "granja-la-esperanza" and not is_excluded_product(product):
+            response = get(f"{roaster.base_url}/products/{product.handle}")
+            try:
+                product.structured_coffee = parse_granja_details(response.text)
+            finally:
+                response.close()
 
-        data = resp.json()
-        raw_products = data.get("products", [])
-
-        if not raw_products:
-            break
-
-        for p in raw_products:
-            variants = p.get("variants", [])
-
-            # Tags come as comma-separated string or list depending on endpoint
-            tags_raw = p.get("tags", [])
-            if isinstance(tags_raw, str):
-                tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
-            else:
-                tags = tags_raw
-
-            title = p.get("title", "")
-            product_type = p.get("product_type", "")
-
-            # Skip products tagged as archived by the roaster
-            if any(t.lower() == "archived" for t in tags):
-                continue
-
-            # Availability: product is in-stock if ANY variant is available
-            is_available = any(v.get("available", False) for v in variants)
-
-            # Pick best standard + sample variants
-            standard_v, sample_v = _pick_variants(variants)
-
-            # Standard variant fields
-            price_raw = float(standard_v.get("price", "0") or "0")
-            price = f"{price_raw / roaster.price_divisor:.2f}" if price_raw else ""
-            weight_grams = _parse_variant_grams(standard_v)
-            weight_label = _variant_weight_label(standard_v, weight_grams)
-
-            # Sample variant fields
-            sample_price = ""
-            sample_grams = 0
-            sample_label = ""
-            if sample_v is not None:
-                sample_raw = float(sample_v.get("price", "0") or "0")
-                sample_price = f"{sample_raw / roaster.price_divisor:.2f}" if sample_raw else ""
-                sample_grams = _parse_variant_grams(sample_v)
-                sample_label = _variant_weight_label(sample_v, sample_grams)
-
-            # Extract first image URL
-            images = p.get("images", [])
-            image_url = images[0].get("src", "") if images else ""
-            if not image_url and p.get("image"):
-                image_url = p["image"].get("src", "")
-
-            product = ShopifyProduct(
-                id=p["id"],
-                title=title,
-                handle=p.get("handle", ""),
-                vendor=p.get("vendor", ""),
-                product_type=product_type,
-                tags=tags,
-                body_html=p.get("body_html", "") or "",
-                created_at=p.get("created_at", ""),
-                is_available=is_available,
-                price=price,
-                weight_grams=weight_grams,
-                weight_label=weight_label,
-                sample_price=sample_price,
-                sample_grams=sample_grams,
-                sample_label=sample_label,
-                image_url=image_url,
-            )
-
-            all_products.append(product)
-
-        log.info(
-            "[%s] Got %d products on page %d (total so far: %d)",
-            roaster.slug, len(raw_products), page, len(all_products),
-        )
-
-        # If we got fewer than the limit, there are no more pages
-        if len(raw_products) < PAGE_LIMIT:
-            break
-
-        page += 1
-        time.sleep(POLITE_DELAY)
+        all_products.append(product)
 
     log.info("[%s] Total products fetched: %d", roaster.slug, len(all_products))
     return all_products

@@ -27,6 +27,9 @@ class ExtractedCoffee(BaseModel):
 
 class ShopifyProduct(BaseModel):
     """Raw Shopify product fields we care about."""
+    roaster_slug: str = ""
+    source_collection: str | None = None
+    structured_coffee: ExtractedCoffee | None = None
     id: int
     title: str
     handle: str

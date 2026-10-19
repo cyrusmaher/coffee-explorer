@@ -14,6 +14,8 @@ import logging
 import sys
 from pathlib import Path
 
+from scraper.storage import write_json
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,7 +24,7 @@ from scraper.extract import extract_products
 from scraper.match import load_watchlist, match_products
 from scraper.models import RoastedCoffeeProduct
 from scraper.product_filter import should_publish_product
-from scraper.quality import validate_output_quality
+from scraper.quality import validate_output_quality, validate_roaster_coverage
 from scraper.roasters import ROASTERS
 from scraper.shopify import fetch_products
 
@@ -102,16 +104,15 @@ async def run() -> None:
     log.info("Total coffee products: %d", len(all_products))
 
     # Step 4: Watchlist matching (async for Tier 2 LLM)
+    previous = json.loads(OUTPUT_FILE.read_text()) if OUTPUT_FILE.exists() else []
+    validate_roaster_coverage(all_products, [r.slug for r in ROASTERS], previous)
     all_products = await match_products(all_products, watchlist)
     validate_output_quality(all_products)
 
     # Step 5: Write output
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
     output_data = [p.model_dump() for p in all_products]
-    OUTPUT_FILE.write_text(
-        json.dumps(output_data, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    write_json(OUTPUT_FILE, output_data)
 
     matched_count = sum(1 for p in all_products if p.watchlist_match)
     log.info("Wrote %d products to %s", len(all_products), OUTPUT_FILE)
