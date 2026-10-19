@@ -11495,5 +11495,1070 @@
     "elevation": null,
     "tasting_notes": [],
     "is_coffee_product": true
+  },
+  "82e7ec0143263d6c": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "07c9759ec44c794b": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "36c42e0dbb57eb7c": {
+    "producer_or_farm": null,
+    "origin_country": "CR",
+    "origin_region": null,
+    "variety": [
+      "SL-28"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "e8ef2d8258109373": {
+    "producer_or_farm": null,
+    "origin_country": "ET",
+    "origin_region": "Ethiopia",
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "73ce1f5c07558fa1": {
+    "producer_or_farm": null,
+    "origin_country": "IN",
+    "origin_region": null,
+    "variety": [],
+    "process": "Anaerobic",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "8ffe9cb3b76c4d37": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "e27d9aba7fa9a05b": {
+    "producer_or_farm": null,
+    "origin_country": "Peru",
+    "origin_region": "Norandino",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "83caff89042392b5": {
+    "producer_or_farm": "Daterra",
+    "origin_country": "Brazil",
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "butterscotch",
+      "blueberry",
+      "clove",
+      "guava"
+    ],
+    "is_coffee_product": true
+  },
+  "03066e9703a578ea": {
+    "producer_or_farm": "Daterra",
+    "origin_country": "Brazil",
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "30439f4cb962b9be": {
+    "producer_or_farm": "Daterra",
+    "origin_country": "Brazil",
+    "origin_region": "Cerrado",
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "dark chocolate",
+      "cherry-glazed walnut"
+    ],
+    "is_coffee_product": true
+  },
+  "606af61530ff1cfd": {
+    "producer_or_farm": "Finca El Meson",
+    "origin_country": "Colombia",
+    "origin_region": "Huila",
+    "variety": [
+      "Pink Bourbon"
+    ],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [
+      "grapefruit",
+      "tangerine",
+      "honey florals"
+    ],
+    "is_coffee_product": true
+  },
+  "fbd702e72091df62": {
+    "producer_or_farm": "Finca El Mesón",
+    "origin_country": "Colombia",
+    "origin_region": "Huila",
+    "variety": [
+      "Pink Bourbon"
+    ],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [
+      "floral",
+      "malt",
+      "orange",
+      "honey"
+    ],
+    "is_coffee_product": true
+  },
+  "53f7aefded2925f2": {
+    "producer_or_farm": "Cadefihuila Cooperative",
+    "origin_country": "Colombia",
+    "origin_region": "Huila",
+    "variety": [],
+    "process": "Ethyl Acetate",
+    "elevation": null,
+    "tasting_notes": [
+      "brown sugar",
+      "almond",
+      "caramel"
+    ],
+    "is_coffee_product": true
+  },
+  "a45b28d59e1ff8ef": {
+    "producer_or_farm": "Cadefihuila Cooperative",
+    "origin_country": "Colombia",
+    "origin_region": "Huila",
+    "variety": [],
+    "process": "Ethyl Acetate",
+    "elevation": null,
+    "tasting_notes": [
+      "dark chocolate",
+      "almond",
+      "caramel"
+    ],
+    "is_coffee_product": true
+  },
+  "1f5a06df2b5f1087": {
+    "producer_or_farm": null,
+    "origin_country": "Costa Rica",
+    "origin_region": "Dota",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "dark chocolate",
+      "cherry"
+    ],
+    "is_coffee_product": true
+  },
+  "954552eeae80edf6": {
+    "producer_or_farm": null,
+    "origin_country": "Costa Rica",
+    "origin_region": "Dota",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "smooth acidity",
+      "round body",
+      "semi-sweet chocolate-cherry core",
+      "hint of orange"
+    ],
+    "is_coffee_product": true
+  },
+  "121d381d86817bb8": {
+    "producer_or_farm": null,
+    "origin_country": "Costa Rica",
+    "origin_region": "Dota",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "dark chocolate",
+      "caramel",
+      "walnut"
+    ],
+    "is_coffee_product": true
+  },
+  "54beae19ae92985c": {
+    "producer_or_farm": null,
+    "origin_country": "Costa Rica",
+    "origin_region": null,
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [
+      "orange",
+      "milk chocolate",
+      "clear maple syrup"
+    ],
+    "is_coffee_product": true
+  },
+  "c94a4b666b5de701": {
+    "producer_or_farm": "Montecarlos Estate",
+    "origin_country": "El Salvador",
+    "origin_region": null,
+    "variety": [
+      "Pacamara",
+      "Catuaí",
+      "Caturra",
+      "Bourbon"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "25113c00658410d9": {
+    "producer_or_farm": "Montecarlos Estate",
+    "origin_country": "El Salvador",
+    "origin_region": null,
+    "variety": [
+      "Pacamara",
+      "Catuaí",
+      "Caturra",
+      "Bourbon"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "0b885a7412bd9f1c": {
+    "producer_or_farm": "Worka Chelbessa",
+    "origin_country": "Ethiopia",
+    "origin_region": "Yirgacheffe",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "caramel",
+      "cherry blossom",
+      "stewed peach",
+      "honey"
+    ],
+    "is_coffee_product": true
+  },
+  "9dd7fbcb8acee557": {
+    "producer_or_farm": "Asorguate Farmer’s Association",
+    "origin_country": "Guatemala",
+    "origin_region": "San Martin",
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [
+      "milk chocolate",
+      "molasses",
+      "tangerine"
+    ],
+    "is_coffee_product": true
+  },
+  "5cf5fa071aff9fa2": {
+    "producer_or_farm": "Worka Chelbessa",
+    "origin_country": "Ethiopia",
+    "origin_region": "Yirgacheffe",
+    "variety": [
+      "Heirloom"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "peach",
+      "cherry",
+      "jasmine"
+    ],
+    "is_coffee_product": true
+  },
+  "62fa7020d6356357": {
+    "producer_or_farm": "Dominga Perez Juan",
+    "origin_country": "Guatemala",
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "rose",
+      "peach",
+      "plum"
+    ],
+    "is_coffee_product": true
+  },
+  "ff4a580f4816613d": {
+    "producer_or_farm": "Mamuto",
+    "origin_country": "Kenya",
+    "origin_region": "Kirinyaga",
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "5d422398c681a9eb": {
+    "producer_or_farm": "Mamuto",
+    "origin_country": "Kenya",
+    "origin_region": "Mt. Kenya area",
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [
+      "juicy plum",
+      "sweet blackberry"
+    ],
+    "is_coffee_product": true
+  },
+  "eaee42d613c098ee": {
+    "producer_or_farm": "Kanzu",
+    "origin_country": "Rwanda",
+    "origin_region": null,
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [
+      "black tea-coated",
+      "sweet plum",
+      "orange"
+    ],
+    "is_coffee_product": true
+  },
+  "e5814b19e00fa93f": {
+    "producer_or_farm": "Agustín Lopez",
+    "origin_country": "Mexico",
+    "origin_region": "Chiapas’ Altos region",
+    "variety": [],
+    "process": "Washed",
+    "elevation": "4,590ft",
+    "tasting_notes": [
+      "dark chocolate",
+      "light caramel",
+      "white honey"
+    ],
+    "is_coffee_product": true
+  },
+  "8a5e71793d3ab79a": {
+    "producer_or_farm": "Miramar",
+    "origin_country": "Mexico",
+    "origin_region": "Oaxaca",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "milk chocolate",
+      "tangerine",
+      "lime"
+    ],
+    "is_coffee_product": true
+  },
+  "0dd1d6844d9aa023": {
+    "producer_or_farm": "Kanzu",
+    "origin_country": "Rwanda",
+    "origin_region": null,
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [
+      "dark chocolate",
+      "plum",
+      "orange"
+    ],
+    "is_coffee_product": true
+  },
+  "1f6572f8f3d876e5": {
+    "producer_or_farm": "Adriana Diaz Castillo",
+    "origin_country": "Colombia",
+    "origin_region": "El Progreso",
+    "variety": [
+      "Geisha"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "sweet lemonade",
+      "bergamot",
+      "wintergreen"
+    ],
+    "is_coffee_product": true
+  },
+  "f8e49b8f326e498f": {
+    "producer_or_farm": "Patio Bonito",
+    "origin_country": "Colombia",
+    "origin_region": "Cauca",
+    "variety": [
+      "Bourbon Rosado",
+      "Gesha",
+      "SL-28",
+      "Typica",
+      "Laurina",
+      "Wush Wush"
+    ],
+    "process": "Anaerobic / Washed",
+    "elevation": "5150 to 5410 feet above sea level",
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "319928f9f707abec": {
+    "producer_or_farm": "Las Afiladeras",
+    "origin_country": "Ecuador",
+    "origin_region": null,
+    "variety": [
+      "Typica",
+      "Bourbon",
+      "Caturra",
+      "Catucai"
+    ],
+    "process": null,
+    "elevation": "6,000 feet above sea level",
+    "tasting_notes": [
+      "pomegranate",
+      "raspberry",
+      "hibiscus"
+    ],
+    "is_coffee_product": true
+  },
+  "275f3a8bee546433": {
+    "producer_or_farm": "Gesha Village Estate",
+    "origin_country": "Ethiopia",
+    "origin_region": "western Ethiopia",
+    "variety": [
+      "Geisha"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "peach jam",
+      "tangerine sparkle",
+      "honeysuckle"
+    ],
+    "is_coffee_product": true
+  },
+  "d3f7e648b967fb50": {
+    "producer_or_farm": "Gesha Village Estate",
+    "origin_country": "Ethiopia",
+    "origin_region": "western Ethiopia",
+    "variety": [
+      "Geisha"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "jasmine",
+      "white grape",
+      "cherry blossom"
+    ],
+    "is_coffee_product": true
+  },
+  "59c6512729f70722": {
+    "producer_or_farm": null,
+    "origin_country": "Ethiopia",
+    "origin_region": "Bombe Mountains",
+    "variety": [],
+    "process": "Anaerobic",
+    "elevation": "7,500–7,900 feet above sea level",
+    "tasting_notes": [
+      "candied lemon",
+      "syrupy nectarine",
+      "jasmine"
+    ],
+    "is_coffee_product": true
+  },
+  "b7b0dff7861ef489": {
+    "producer_or_farm": "El Injerto",
+    "origin_country": "Guatemala",
+    "origin_region": null,
+    "variety": [
+      "Pacamara"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "butterscotch",
+      "mild anise",
+      "orange peel"
+    ],
+    "is_coffee_product": true
+  },
+  "15ede584aafec466": {
+    "producer_or_farm": "Finca Concepción",
+    "origin_country": "Guatemala",
+    "origin_region": "Jalapa",
+    "variety": [
+      "Geisha",
+      "Bourbon"
+    ],
+    "process": "Washed",
+    "elevation": "5,800ft",
+    "tasting_notes": [
+      "nectarine",
+      "light honey",
+      "earl grey tea"
+    ],
+    "is_coffee_product": true
+  },
+  "52eda9db5840e7a2": {
+    "producer_or_farm": "Hunapu",
+    "origin_country": "Guatemala",
+    "origin_region": "Antigua",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "crisp apple",
+      "soft caramel",
+      "bright lemon zest"
+    ],
+    "is_coffee_product": true
+  },
+  "24991eb67f9ba9df": {
+    "producer_or_farm": "Mamuto",
+    "origin_country": "Kenya",
+    "origin_region": "Kirinyaga",
+    "variety": [],
+    "process": "Washed",
+    "elevation": "17000 feet",
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "e37a0853ffe2e1e8": {
+    "producer_or_farm": "Agustín Lopez’s farm",
+    "origin_country": "Mexico",
+    "origin_region": "Tenejapa",
+    "variety": [],
+    "process": null,
+    "elevation": "4,590 ft",
+    "tasting_notes": [
+      "sweet honey",
+      "deep orange",
+      "soft earl grey"
+    ],
+    "is_coffee_product": true
+  },
+  "6071be4e392d2833": {
+    "producer_or_farm": "Gilber Huayllas Huaman",
+    "origin_country": "Peru",
+    "origin_region": "Andes",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "ba237efa0ecd7bb4": {
+    "producer_or_farm": "Abdullah Al-Naadm",
+    "origin_country": "Yemen",
+    "origin_region": "Bani Murrah",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "heavy honey blossom florals",
+      "juicy ripe peach",
+      "syrupy-butterscotch"
+    ],
+    "is_coffee_product": true
+  },
+  "1281753169184b61": {
+    "producer_or_farm": "Katibah Jafar",
+    "origin_country": "Yemen",
+    "origin_region": "Hejrat Al Ain",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "cherry blossom",
+      "vanilla",
+      "ripe mango"
+    ],
+    "is_coffee_product": true
+  },
+  "331fc1fb8a036897": {
+    "producer_or_farm": "Wadi Al-Sail",
+    "origin_country": "Yemen",
+    "origin_region": "eastern Haraz region",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "dried raspberry",
+      "spiced date",
+      "nutmeg",
+      "clove",
+      "syrupy-molasses",
+      "brown sugar",
+      "pomegranate"
+    ],
+    "is_coffee_product": true
+  },
+  "2fd510f6a2bfcaa3": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural / Washed / Honey",
+    "elevation": null,
+    "tasting_notes": [
+      "full body",
+      "delicate fruit note",
+      "nut-infused nougat smoothness",
+      "rich dark chocolate",
+      "florality"
+    ],
+    "is_coffee_product": true
+  },
+  "d999e4b4bca25281": {
+    "producer_or_farm": null,
+    "origin_country": "Guatemala",
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "bittersweet chocolate"
+    ],
+    "is_coffee_product": true
+  },
+  "c313f1d357b93709": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "1b6ed2bd986edab6": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [
+      "Pink Bourbon"
+    ],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "422f8439f97ee249": {
+    "producer_or_farm": null,
+    "origin_country": "Nicaragua",
+    "origin_region": null,
+    "variety": [],
+    "process": "Double Fermentation",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "5f654978c6e9a535": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Washed Anaerobic",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "0f56999dc688ed37": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "8078392a2c7ca971": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "c424cdd8e686a4ae": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [
+      "Caturra"
+    ],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Strawberry",
+      "Vanilla"
+    ],
+    "is_coffee_product": true
+  },
+  "e2c43d29a2953f2a": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "39c86db6b775e546": {
+    "producer_or_farm": null,
+    "origin_country": "Ethiopia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Ripe Blackberry",
+      "Chocolate"
+    ],
+    "is_coffee_product": true
+  },
+  "5eb9b84b437e9ba2": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "b03fb2a8d7ef654d": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Honey / Natural / Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "39f8e8841df9ab21": {
+    "producer_or_farm": "Sítio Santa Luzia",
+    "origin_country": "Brazil",
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "4e7fa3768db8dbca": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "415bc649086ca434": {
+    "producer_or_farm": "El Socorro",
+    "origin_country": "Guatemala",
+    "origin_region": null,
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "9a025082e6b7804b": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "56657f99f309d513": {
+    "producer_or_farm": "El Socorro",
+    "origin_country": "Guatemala",
+    "origin_region": null,
+    "variety": [
+      "Pacamara"
+    ],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "3855441d49942e1a": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [
+      "Caturro"
+    ],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "0fc2a6cf3a7d14a4": {
+    "producer_or_farm": "Aquiares Estate",
+    "origin_country": "Costa Rica",
+    "origin_region": null,
+    "variety": [],
+    "process": "Red Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "5838d284fa6bb05b": {
+    "producer_or_farm": "Daterra",
+    "origin_country": "Brazil",
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "0bd7f8404f386446": {
+    "producer_or_farm": "La Muralla",
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [
+      "Pink Bourbon"
+    ],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "1dda9860aae8f380": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "3277eb87f74fa894": {
+    "producer_or_farm": null,
+    "origin_country": "India",
+    "origin_region": "Araku",
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "281861f3e6db498b": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [
+      "Caturra",
+      "Ethiopian Heirloom"
+    ],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "f3d895aafba02f7d": {
+    "producer_or_farm": null,
+    "origin_country": "Ethiopia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Ripe Blackberry",
+      "Chocolate"
+    ],
+    "is_coffee_product": true
+  },
+  "5c72e624b404e1a8": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [
+      "Caturra"
+    ],
+    "process": "Washed / Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Strawberry",
+      "Vanilla"
+    ],
+    "is_coffee_product": true
+  },
+  "6fa33118a1edd6ff": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [
+      "Catimor",
+      "Red Catuai",
+      "Yellow Catuai"
+    ],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Chocolate + Maple"
+    ],
+    "is_coffee_product": true
+  },
+  "f0505cb9fb7a3883": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "c1332e1b7f177158": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "36c54058c6cb02aa": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "f8f6b5412aad437c": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "1831abe11abc0f62": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "9647aa79437df1f0": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "f8ebd0ec7700e8b8": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "786ce4d4f61d33fc": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "51121d634a77f353": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "610d037911f89dd9": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "ab54dd09a605a788": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "2decb5028f61c0d9": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
   }
 }
