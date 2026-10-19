@@ -42,3 +42,29 @@ same branch resumes this progress. A change to the committed cache files starts
 a new cache lineage so restored files cannot overwrite committed corrections.
 
 Run checks with `python -m pytest tests` (install `pytest` separately).
+
+## Shared roasted and green parsers
+
+`scraper/catalog.py` provides paginated Shopify fetching, per-host pacing and
+bounded retries. A missing source, malformed response or failed later page stops
+publication. Roasted output is checked per roaster as well as across the whole
+dataset. George Howell uses its public `all-coffee` collection; Granja's coffee
+facts come from its product-page accordions when the API description is empty.
+
+The neighboring `green-coffee-explorer` repository uses `scraper/green.py` for
+Sweet Maria's, Coffee Bean Corral, Hacea and Royal Coffee, retaining its existing
+output schemas. Royal's Source and Taste infographics provide structured facts
+and charts without model calls. Green producer matches use explicit identities
+and compatible countries. Genuine Origin keeps its SuiteCommerce adapter in the
+green repository and uses the shared transport/publication checks.
+
+Keep the two repositories beside each other or set `COFFEE_EXPLORER_ROOT` in the
+green checkout. Deploy this repository's shared changes before updating the green
+workflow; that workflow checks out shared `main` and tests both repositories.
+Green refreshes do not require an LLM account or a Chromium installation.
+
+Regression fixtures cover the current storefront layouts, charts, package prices,
+empty/error pages, failed pagination, stale negative extractions, and publication
+guards. Each repository also runs its tests on pushes and pull requests. The live
+scrapers remain scheduled weekly; run the green entry points in a temporary copy
+when auditing without replacing that checkout's generated data.

@@ -1,0 +1,212 @@
+{
+  "elements": {
+    "content": {
+      "content": {
+        "blockOrder": [
+          "8534b9a8-7c5d-487e-9f19-34b5fb8dbb6c"
+        ],
+        "blocks": {
+          "8534b9a8-7c5d-487e-9f19-34b5fb8dbb6c": {
+            "entities": [
+              "1ba49797-d879-415c-ae03-e46f81144d70",
+              "a01784de-cdac-4fdf-90d8-22d78ec857ea",
+              "3f05c836-33cc-451b-b61c-e7ec5659a585",
+              "ba752207-e328-476b-b144-4e12959b9eb6",
+              "cdf4fe19-0800-4b82-8db5-f29f9c417174",
+              "3b8bd14c-9614-44a8-821c-2fdcb38bed71",
+              "562b7d5e-0ee4-4a75-b3bf-957e71076505",
+              "19a5c6f5-8157-4f67-beea-188902166b25",
+              "98b869e6-6a20-4c52-b3b3-87bbd29eab95",
+              "b06494f8-b842-4383-b7fe-2dfd917bb325",
+              "0575a3fe-ebc8-4405-a04e-330a983141a1",
+              "b7b16af7-1107-4cf6-81cd-0ddd0da3066a",
+              "17158861-9fc2-44e6-a79d-41a5fff75324",
+              "4a147af3-63a3-4971-a085-7dc74c3d00bc",
+              "b649a3ef-74e1-4f7e-a957-96d8ff59bd6a",
+              "071e6fab-c4f2-44ef-82b1-1fc8723aa7f6",
+              "8b92745a-7c3a-46ec-95ef-9fb15adb16c2",
+              "8a81e8f9-66ef-4a70-aef9-1244ccfee820",
+              "83441fef-ce16-4686-ad35-e47cc8a43b81",
+              "b48ff388-bf34-4f7d-ba6b-4cf00e8fb5ac",
+              "907d3d40-9959-486f-9178-5bacb34d66df",
+              "db836e46-d945-4598-a536-e7d520eaac52",
+              "f3a1aa81-597e-4ed6-996c-d95a9e6140bd",
+              "f9078fe6-9a31-4161-b79a-d29c842bcff2"
+            ]
+          }
+        },
+        "entities": {
+          "0575a3fe-ebc8-4405-a04e-330a983141a1": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Cultivar"
+                  }
+                ]
+              }
+            }
+          },
+          "17158861-9fc2-44e6-a79d-41a5fff75324": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Harvest"
+                  }
+                ]
+              }
+            }
+          },
+          "19a5c6f5-8157-4f67-beea-188902166b25": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "1442 masl"
+                  }
+                ]
+              }
+            }
+          },
+          "1ba49797-d879-415c-ae03-e46f81144d70": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Source"
+                  }
+                ]
+              }
+            }
+          },
+          "3f05c836-33cc-451b-b61c-e7ec5659a585": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Asbi\u2019s estate in association with the Aalamin brand and Central Sumatra Coffee company (CSC)"
+                  }
+                ]
+              }
+            }
+          },
+          "4a147af3-63a3-4971-a085-7dc74c3d00bc": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "October 2025 \u2013 June 2026"
+                  }
+                ]
+              }
+            }
+          },
+          "562b7d5e-0ee4-4a75-b3bf-957e71076505": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Elevation"
+                  }
+                ]
+              }
+            }
+          },
+          "98b869e6-6a20-4c52-b3b3-87bbd29eab95": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Process"
+                  }
+                ]
+              }
+            }
+          },
+          "a01784de-cdac-4fdf-90d8-22d78ec857ea": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Grower"
+                  }
+                ]
+              }
+            }
+          },
+          "b06494f8-b842-4383-b7fe-2dfd917bb325": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Depulped, inoculated, anaerobically cofermented, and infused with lychee fruit essence. Wet Hulled."
+                  }
+                ]
+              }
+            }
+          },
+          "b48ff388-bf34-4f7d-ba6b-4cf00e8fb5ac": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "hover over regions for additional details"
+                  }
+                ]
+              }
+            }
+          },
+          "b7b16af7-1107-4cf6-81cd-0ddd0da3066a": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Typica"
+                  }
+                ]
+              }
+            }
+          },
+          "ba752207-e328-476b-b144-4e12959b9eb6": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Region"
+                  }
+                ]
+              }
+            }
+          },
+          "cdf4fe19-0800-4b82-8db5-f29f9c417174": {
+            "type": "TEXT",
+            "props": {
+              "content": {
+                "blocks": [
+                  {
+                    "text": "Suku Bener, Bener Kelipah, Bener Meriah Regency, Aceh, Indonesia"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "layouts": {}
+      }
+    }
+  }
+}
