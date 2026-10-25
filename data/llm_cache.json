@@ -12560,5 +12560,432 @@
     "elevation": null,
     "tasting_notes": [],
     "is_coffee_product": false
+  },
+  "52ee2d6fdd89a318": {
+    "producer_or_farm": "Kotowa Las Brujas",
+    "origin_country": "PA",
+    "origin_region": null,
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "20948d0b2f55f725": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "2e3280717021478b": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "edae2021eddbda7d": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "3b200402b6afa930": {
+    "producer_or_farm": "Daterra",
+    "origin_country": "Brazil",
+    "origin_region": null,
+    "variety": [],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "dark chocolate",
+      "cherry-glazed walnut"
+    ],
+    "is_coffee_product": true
+  },
+  "7b26dd92f9cbd994": {
+    "producer_or_farm": "Finca El Meson",
+    "origin_country": "Colombia",
+    "origin_region": "Huila",
+    "variety": [
+      "Pink Bourbon"
+    ],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [
+      "grapefruit",
+      "tangerine",
+      "honey florals"
+    ],
+    "is_coffee_product": true
+  },
+  "d3036275aa2d8e93": {
+    "producer_or_farm": "Finca El Mesón",
+    "origin_country": "Colombia",
+    "origin_region": "Huila",
+    "variety": [
+      "Pink Bourbon"
+    ],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [
+      "floral",
+      "malt",
+      "orange",
+      "honey"
+    ],
+    "is_coffee_product": true
+  },
+  "0bb188509e6a0a84": {
+    "producer_or_farm": null,
+    "origin_country": "Costa Rica",
+    "origin_region": "Dota",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "milk chocolate",
+      "cherry"
+    ],
+    "is_coffee_product": true
+  },
+  "130f119a5c5e12b6": {
+    "producer_or_farm": "La Minita",
+    "origin_country": "Costa Rica",
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "orange",
+      "milk chocolate",
+      "clear maple syrup"
+    ],
+    "is_coffee_product": true
+  },
+  "11f2dff86fb54b36": {
+    "producer_or_farm": "Worka Chelbessa",
+    "origin_country": "Ethiopia",
+    "origin_region": "Yirgacheffe",
+    "variety": [
+      "Heirloom"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "peach",
+      "cherry",
+      "jasmine"
+    ],
+    "is_coffee_product": true
+  },
+  "5fabb87e8fc71c7e": {
+    "producer_or_farm": "Worka Chelbessa",
+    "origin_country": "Ethiopia",
+    "origin_region": "Yirgacheffe",
+    "variety": [
+      "Heirloom"
+    ],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "caramel",
+      "cherry blossom",
+      "stewed peach",
+      "honey"
+    ],
+    "is_coffee_product": true
+  },
+  "c6de2166d464adfa": {
+    "producer_or_farm": "Agustín Lopez’s farm",
+    "origin_country": "Mexico",
+    "origin_region": "Tenejapa",
+    "variety": [],
+    "process": null,
+    "elevation": "4,590 ft",
+    "tasting_notes": [
+      "sweet honey",
+      "orange sorbet",
+      "soft earl grey"
+    ],
+    "is_coffee_product": true
+  },
+  "3a1f4b89fc5855a0": {
+    "producer_or_farm": "Sipi Falls Washing Station",
+    "origin_country": "Uganda",
+    "origin_region": "Gamatui community",
+    "variety": [],
+    "process": "Natural / Anaerobic Natural",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "5add3ef5a1a6ead9": {
+    "producer_or_farm": "Haider Abamecha",
+    "origin_country": "Ethiopia",
+    "origin_region": "Jimma",
+    "variety": [
+      "JARC 7410",
+      "JARC 74140",
+      "JARC 7440"
+    ],
+    "process": "Washed",
+    "elevation": "1865-2090 MASL",
+    "tasting_notes": [
+      "soft florals",
+      "stone fruit",
+      "cooked peaches"
+    ],
+    "is_coffee_product": true
+  },
+  "a51e81cd99219819": {
+    "producer_or_farm": "Juan Peña",
+    "origin_country": "Ecuador",
+    "origin_region": "Saraguro Formation, Loja",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Washed",
+    "elevation": "1800–2200 masl",
+    "tasting_notes": [
+      "jasmine",
+      "citrus"
+    ],
+    "is_coffee_product": true
+  },
+  "0dd5d3ab9796fde0": {
+    "producer_or_farm": "Gara Agena Washing Station",
+    "origin_country": "Ethiopia",
+    "origin_region": "Karamo, Bura, Sidama",
+    "variety": [
+      "Ethiopian Landraces"
+    ],
+    "process": "Natural",
+    "elevation": "1995–2230 masl",
+    "tasting_notes": [
+      "stone fruit",
+      "mixed berry",
+      "juicy"
+    ],
+    "is_coffee_product": true
+  },
+  "e6fc9ee021f24c19": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "c35f495f9c260b16": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "d3f0c260d390d606": {
+    "producer_or_farm": "Finca El Calagual",
+    "origin_country": "Guatemala",
+    "origin_region": "Santa Rosa",
+    "variety": [
+      "Pache"
+    ],
+    "process": "Anaerobic Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Stone Fruit",
+      "Raspberry Yogurt"
+    ],
+    "is_coffee_product": true
+  },
+  "d68e4d7351329e2e": {
+    "producer_or_farm": "La Maravilla",
+    "origin_country": "Guatemala",
+    "origin_region": "Huehuetenango",
+    "variety": [
+      "Pache",
+      "Bourbon",
+      "Caturra"
+    ],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [
+      "Dark chocolate",
+      "toasted almond",
+      "nougat"
+    ],
+    "is_coffee_product": true
+  },
+  "3283ce12dabec422": {
+    "producer_or_farm": "Finca Los Bellotos",
+    "origin_country": "El Salvador",
+    "origin_region": null,
+    "variety": [
+      "Bernardina"
+    ],
+    "process": "Anaerobic Honey",
+    "elevation": null,
+    "tasting_notes": [
+      "Pineapple",
+      "Lemon Sherbet",
+      "Green Apple",
+      "Cola"
+    ],
+    "is_coffee_product": true
+  },
+  "f8a14fe395637754": {
+    "producer_or_farm": "Pacas Family Estates",
+    "origin_country": "El Salvador",
+    "origin_region": "San Joaquin",
+    "variety": [
+      "Bourbon"
+    ],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Chocolate",
+      "tamarind",
+      "red apple"
+    ],
+    "is_coffee_product": true
+  },
+  "293eb355371ac8f8": {
+    "producer_or_farm": "Finca La Esperanza",
+    "origin_country": "El Salvador",
+    "origin_region": null,
+    "variety": [
+      "Kent"
+    ],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Blackberry",
+      "lemonade",
+      "tamarind",
+      "floral"
+    ],
+    "is_coffee_product": true
+  },
+  "41589cd058f26ee8": {
+    "producer_or_farm": "Alexander and Arley Vargas",
+    "origin_country": "Colombia",
+    "origin_region": "Palestina, Huila",
+    "variety": [
+      "Striped Red Bourbon"
+    ],
+    "process": "Natural",
+    "elevation": "1600-1800 MASL",
+    "tasting_notes": [
+      "Orange",
+      "Strawberry Shortcake",
+      "Marzipan"
+    ],
+    "is_coffee_product": true
+  },
+  "5193683b11948254": {
+    "producer_or_farm": "Finca Santa Monica",
+    "origin_country": "Colombia",
+    "origin_region": "Quindio",
+    "variety": [
+      "Gesha",
+      "Pink Bourbon",
+      "Tabi",
+      "Caturra",
+      "Java"
+    ],
+    "process": "72 hour fermentation with added wine yeast",
+    "elevation": "2100 MASL",
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "a4b25b5ba7cbaaef": {
+    "producer_or_farm": "Ana Sora washing station",
+    "origin_country": "Ethiopia",
+    "origin_region": "Guji",
+    "variety": [
+      "Heirloom"
+    ],
+    "process": "Natural",
+    "elevation": "1800 - 2300 meters",
+    "tasting_notes": [
+      "Cherry Cola",
+      "White Grape",
+      "Lime Zest"
+    ],
+    "is_coffee_product": true
+  },
+  "d4ef0e31d34bd878": {
+    "producer_or_farm": "Bella Vista",
+    "origin_country": "Mexico",
+    "origin_region": "Chiapas",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "d2461d34a8fac027": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "caramel",
+      "chocolate taffy candy"
+    ],
+    "is_coffee_product": true
+  },
+  "c226b67c8e7b7fbd": {
+    "producer_or_farm": "Roberto Chéves & Ana Recinos",
+    "origin_country": "Guatemala",
+    "origin_region": "San Agustín Acasaguastlán, El Progreso",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Cold Washed",
+    "elevation": "1800 masl",
+    "tasting_notes": [
+      "Peach Rings",
+      "Mango",
+      "Jasmine",
+      "Passionfruit"
+    ],
+    "is_coffee_product": true
+  },
+  "746c372bb0864660": {
+    "producer_or_farm": "Roberto Chéves & Ana Recinos",
+    "origin_country": "Guatemala",
+    "origin_region": "San Agustín Acasaguastlán, El Progreso",
+    "variety": [
+      "Villa Sarchi"
+    ],
+    "process": "Honey",
+    "elevation": "1800 masl",
+    "tasting_notes": [
+      "Pink Lady Apple",
+      "Cane Sugar",
+      "Mandarin Orange",
+      "White Grape"
+    ],
+    "is_coffee_product": true
   }
 }
