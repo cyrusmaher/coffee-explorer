@@ -12987,5 +12987,306 @@
       "White Grape"
     ],
     "is_coffee_product": true
+  },
+  "6174e7653638f1f7": {
+    "producer_or_farm": "Elida Estate",
+    "origin_country": "Panama",
+    "origin_region": "Boquete",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "ca464a49e255ec18": {
+    "producer_or_farm": "Silvia Carolina Herrera Hernandez",
+    "origin_country": "Mexico",
+    "origin_region": "Chiapas",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "74bb0561f7c7a3aa": {
+    "producer_or_farm": "Finca El Injerto",
+    "origin_country": "Guatemala",
+    "origin_region": "Huehuetenango",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "3b9fc773335bf81e": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "b8ca9ae945f0ac87": {
+    "producer_or_farm": null,
+    "origin_country": "Colombia",
+    "origin_region": null,
+    "variety": [],
+    "process": "Red Honey",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "5a7132faffc20a1e": {
+    "producer_or_farm": null,
+    "origin_country": "Costa Rica",
+    "origin_region": "Dota",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "smooth acidity",
+      "round body",
+      "rich chocolate-cherry core",
+      "hint of orange"
+    ],
+    "is_coffee_product": true
+  },
+  "98bde140f4ae8337": {
+    "producer_or_farm": "Hunapu",
+    "origin_country": "Guatemala",
+    "origin_region": "Antigua",
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "crisp apple",
+      "soft caramel",
+      "bright lemon zest"
+    ],
+    "is_coffee_product": true
+  },
+  "63c1bfa610a8d930": {
+    "producer_or_farm": "Lasso Y Vergara",
+    "origin_country": "Colombia",
+    "origin_region": "Huila",
+    "variety": [
+      "Caturra",
+      "Gesha"
+    ],
+    "process": "Co-fermented / Washed",
+    "elevation": null,
+    "tasting_notes": [
+      "cinnamon",
+      "red fruits",
+      "sweetness"
+    ],
+    "is_coffee_product": true
+  },
+  "f749e5f0dddf00ec": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": "Anaerobic / Natural / Co-ferment",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "a81c4ccb7990c8bd": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": false
+  },
+  "f5e0b87a46b508e3": {
+    "producer_or_farm": "Hacienda La Esmeralda",
+    "origin_country": "Panama",
+    "origin_region": "Cañas Verdes",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Honey",
+    "elevation": null,
+    "tasting_notes": [
+      "floral",
+      "ripe stone fruit",
+      "fresh citrus",
+      "sweetness"
+    ],
+    "is_coffee_product": true
+  },
+  "8831a6da5ca467cf": {
+    "producer_or_farm": "Finca La Aurora",
+    "origin_country": "Panama",
+    "origin_region": "Chiriquí",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Natural",
+    "elevation": null,
+    "tasting_notes": [
+      "Orange Blossom",
+      "Jasmine",
+      "Raspberry",
+      "Peach Candy",
+      "White Grape",
+      "Earl Grey",
+      "Honey"
+    ],
+    "is_coffee_product": true
+  },
+  "6f6bed632b273c5d": {
+    "producer_or_farm": "Finca Deborah",
+    "origin_country": "Panama",
+    "origin_region": "Volcán",
+    "variety": [
+      "Geisha"
+    ],
+    "process": "Extended Natural / CM Washed Finish",
+    "elevation": "over 1,900 meters above sea level",
+    "tasting_notes": [
+      "Ripe Pineapple",
+      "Mango",
+      "Strawberry"
+    ],
+    "is_coffee_product": true
+  },
+  "cb34f2767f2353ea": {
+    "producer_or_farm": null,
+    "origin_country": "Peru",
+    "origin_region": "Amazonas",
+    "variety": [
+      "Caturra",
+      "Pache",
+      "Catimor"
+    ],
+    "process": null,
+    "elevation": "1,300 and 1,700 metres",
+    "tasting_notes": [
+      "dried jujube",
+      "lime",
+      "milk tea",
+      "honey"
+    ],
+    "is_coffee_product": true
+  },
+  "d460704ce9801a3c": {
+    "producer_or_farm": "SNAP",
+    "origin_country": "Ethiopia",
+    "origin_region": "Nensebo, West Arsi, Oromia",
+    "variety": [
+      "1974-1975 JARC selections and local landraces"
+    ],
+    "process": "Natural",
+    "elevation": "1,900 - 2,100+ MASL",
+    "tasting_notes": [
+      "orange blossom",
+      "mango",
+      "blueberry",
+      "raspberry",
+      "nectarous"
+    ],
+    "is_coffee_product": true
+  },
+  "bd94ed45288c6bc0": {
+    "producer_or_farm": "AproCafé Atitlán Growers Association",
+    "origin_country": "Guatemala",
+    "origin_region": "San Juan La Laguna, Lake Atitlán",
+    "variety": [
+      "Caturra",
+      "Bourbon",
+      "Catuaí",
+      "Pache"
+    ],
+    "process": "Washed",
+    "elevation": "1,560-2,200 MASL",
+    "tasting_notes": [
+      "honey crisp apple",
+      "milk chocolate",
+      "nougat",
+      "lemon aftertaste"
+    ],
+    "is_coffee_product": true
+  },
+  "e62501abe496e9cd": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "strawberry jam",
+      "waffle cone",
+      "chocolate cake"
+    ],
+    "is_coffee_product": true
+  },
+  "35363fc26c7ec553": {
+    "producer_or_farm": null,
+    "origin_country": null,
+    "origin_region": null,
+    "variety": [],
+    "process": null,
+    "elevation": null,
+    "tasting_notes": [
+      "peaches and cream",
+      "lemon meringue",
+      "white chocolate"
+    ],
+    "is_coffee_product": true
+  },
+  "f615ce7b4381e765": {
+    "producer_or_farm": "Finca Del Putushio",
+    "origin_country": "Ecuador",
+    "origin_region": "Loja",
+    "variety": [
+      "Typica Mejorado"
+    ],
+    "process": "Washed",
+    "elevation": "2200 masl",
+    "tasting_notes": [
+      "Orange Blossom",
+      "Pear",
+      "Apricot",
+      "Honeydew"
+    ],
+    "is_coffee_product": true
+  },
+  "7d16e3a67580f6c6": {
+    "producer_or_farm": "Siempre Verde Farm",
+    "origin_country": "Ecuador",
+    "origin_region": "Pichincha",
+    "variety": [
+      "Typica Mejorado"
+    ],
+    "process": "Washed",
+    "elevation": null,
+    "tasting_notes": [],
+    "is_coffee_product": true
+  },
+  "4bdf13d03ce75fc1": {
+    "producer_or_farm": null,
+    "origin_country": "Kenya",
+    "origin_region": "Kirinyaga",
+    "variety": [],
+    "process": "Double Washed Process",
+    "elevation": null,
+    "tasting_notes": [
+      "Pink Grapefruit",
+      "Black Currant",
+      "Violet"
+    ],
+    "is_coffee_product": true
   }
 }
